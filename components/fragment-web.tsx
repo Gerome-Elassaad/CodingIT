@@ -1,4 +1,5 @@
 import { CopyButton } from './ui/copy-button'
+import { ErrorBoundary } from './error-boundary'
 import { Button } from '@/components/ui/button'
 import {
   Tooltip,
@@ -19,47 +20,71 @@ export function FragmentWeb({ result }: { result: ExecutionResultWeb }) {
   }
 
   return (
-    <div className="flex flex-col w-full h-full">
-      <iframe
-        key={iframeKey}
-        className="h-full w-full"
-        sandbox="allow-forms allow-scripts allow-same-origin"
-        loading="lazy"
-        src={result.url}
-      />
-      <div className="p-2 border-t">
-        <div className="flex items-center bg-muted dark:bg-white/10 rounded-2xl">
-          <TooltipProvider>
-            <Tooltip delayDuration={0}>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="link"
-                  className="text-muted-foreground"
-                  onClick={refreshIframe}
-                >
-                  <RotateCw className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Refresh</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          <span className="text-muted-foreground text-xs flex-1 text-ellipsis overflow-hidden whitespace-nowrap">
-            {result.url}
-          </span>
-          <TooltipProvider>
-            <Tooltip delayDuration={0}>
-              <TooltipTrigger asChild>
-                <CopyButton
-                  variant="link"
-                  content={result.url}
-                  className="text-muted-foreground"
-                />
-              </TooltipTrigger>
-              <TooltipContent>Copy URL</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+    <ErrorBoundary
+      fallback={
+        <div className="flex items-center justify-center h-full min-h-[200px] p-4">
+          <div className="text-center">
+            <div className="text-destructive text-lg font-semibold mb-2">
+              Sandbox Preview Error
+            </div>
+            <div className="text-muted-foreground text-sm mb-4">
+              There was an error loading the sandbox preview. This could be due to network issues or sandbox configuration problems.
+            </div>
+            <button
+              onClick={refreshIframe}
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+            >
+              Retry Preview
+            </button>
+          </div>
+        </div>
+      }
+    >
+      <div className="flex flex-col w-full h-full">
+        <iframe
+          key={iframeKey}
+          className="h-full w-full"
+          sandbox="allow-forms allow-scripts allow-same-origin"
+          loading="lazy"
+          src={result.url}
+          onError={(e) => {
+            console.error('Iframe load error:', e)
+          }}
+        />
+        <div className="p-2 border-t">
+          <div className="flex items-center bg-muted dark:bg-white/10 rounded-2xl">
+            <TooltipProvider>
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="link"
+                    className="text-muted-foreground"
+                    onClick={refreshIframe}
+                  >
+                    <RotateCw className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Refresh</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <span className="text-muted-foreground text-xs flex-1 text-ellipsis overflow-hidden whitespace-nowrap">
+              {result.url}
+            </span>
+            <TooltipProvider>
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <CopyButton
+                    variant="link"
+                    content={result.url}
+                    className="text-muted-foreground"
+                  />
+                </TooltipTrigger>
+                <TooltipContent>Copy URL</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
         </div>
       </div>
-    </div>
+    </ErrorBoundary>
   )
 }
