@@ -18,7 +18,7 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
     <PHProvider
       apiKey={process.env.NEXT_PUBLIC_POSTHOG_KEY}
       options={{
-        api_host: process.env.NEXT_PUBLIC_POSTHog_HOST,
+        api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
         capture_pageview: false // Disable automatic pageview capture, as we capture manually
       }}
     >

@@ -3,6 +3,7 @@ import { EnhancedCodeInterpreter } from './enhanced-code-interpreter'
 import { FragmentCode } from './fragment-code'
 import { FragmentPreview } from './fragment-preview'
 import { FragmentTerminal } from './fragment-terminal'
+import { ErrorBoundary } from './error-boundary'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
@@ -135,31 +136,39 @@ export function Preview({
         {fragment && (
           <div className="overflow-y-auto w-full h-full">
             <TabsContent value="code" className="h-full">
-              <FragmentCode />
+              <ErrorBoundary>
+                <FragmentCode />
+              </ErrorBoundary>
             </TabsContent>
             <TabsContent value="fragment" className="h-full">
               {result && (
-                <FragmentPreview
-                  result={result as ExecutionResult}
-                  code={code}
-                  executeCode={executeCode}
-                />
+                <ErrorBoundary>
+                  <FragmentPreview
+                    result={result as ExecutionResult}
+                    code={code}
+                    executeCode={executeCode}
+                  />
+                </ErrorBoundary>
               )}
             </TabsContent>
             <TabsContent value="interpreter" className="h-full">
-              <EnhancedCodeInterpreter
-                result={result && result.template === 'code-interpreter-v1' ? result : undefined}
-                code={code}
-                executeCode={executeCode}
-              />
+              <ErrorBoundary>
+                <EnhancedCodeInterpreter
+                  result={result && result.template === 'code-interpreter-v1' ? result : undefined}
+                  code={code}
+                  executeCode={executeCode}
+                />
+              </ErrorBoundary>
             </TabsContent>
             <TabsContent value="terminal" className="h-full">
               {result && (
-                <FragmentTerminal 
-                  result={result as ExecutionResult}
-                  teamID={teamID}
-                  accessToken={accessToken}
-                />
+                <ErrorBoundary>
+                  <FragmentTerminal 
+                    result={result as ExecutionResult}
+                    teamID={teamID}
+                    accessToken={accessToken}
+                  />
+                </ErrorBoundary>
               )}
             </TabsContent>
           </div>

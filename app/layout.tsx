@@ -1,6 +1,7 @@
 import './globals.css'
 import { AuthProvider, PostHogProvider, ThemeProvider } from './providers'
 import { Toaster } from '@/components/ui/toaster'
+import { GlobalErrorHandler } from '@/components/global-error-handler'
 import type { Metadata } from 'next'
 // import { Inter } from 'next/font/google'
 
@@ -51,7 +52,10 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <PostHogProvider>
-            <AuthProvider>{children}</AuthProvider>
+            <AuthProvider>
+              <GlobalErrorHandler />
+              {children}
+            </AuthProvider>
           </PostHogProvider>
           <Toaster />
         </ThemeProvider>

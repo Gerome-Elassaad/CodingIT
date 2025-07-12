@@ -1,6 +1,9 @@
 import { createBrowserClient } from './supabase-client'
 
-const supabase = createBrowserClient();
+// Lazy getter for supabase instance
+function getSupabase() {
+  return createBrowserClient()
+}
 
 export interface UserProfile {
   id: string
@@ -69,6 +72,7 @@ export async function tableExists(tableName: string): Promise<boolean> {
     return tablesExistCache[tableName]
   }
 
+  const supabase = getSupabase()
   if (!supabase) {
     tablesExistCache[tableName] = false
     cacheTime[tableName] = now
@@ -125,7 +129,10 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
   return safeOperation(
     'user_profiles',
     async () => {
-      const { data, error } = await supabase!
+      const supabase = getSupabase()
+      if (!supabase) throw new Error('Supabase not available')
+
+      const { data, error } = await supabase
         .from('user_profiles')
         .select('*')
         .eq('user_id', userId)
@@ -167,7 +174,7 @@ export async function createUserProfile(userId: string, profile?: Partial<UserPr
   return safeOperation(
     'user_profiles',
     async () => {
-      const { data, error } = await supabase!
+      const { data, error } = await getSupabase()!
         .from('user_profiles')
         .insert({
           user_id: userId,
@@ -196,7 +203,7 @@ export async function updateUserProfile(userId: string, updates: Partial<UserPro
   return safeOperation(
     'user_profiles',
     async () => {
-      const { error } = await supabase!
+      const { error } = await getSupabase()!
         .from('user_profiles')
         .update(updates)
         .eq('user_id', userId)
@@ -219,7 +226,7 @@ export async function getUserPreferences(userId: string): Promise<UserPreference
   return safeOperation(
     'user_preferences',
     async () => {
-      const { data, error } = await supabase!
+      const { data, error } = await getSupabase()!
         .from('user_preferences')
         .select('*')
         .eq('user_id', userId)
@@ -263,7 +270,7 @@ export async function createUserPreferences(userId: string, preferences?: Partia
   return safeOperation(
     'user_preferences',
     async () => {
-      const { data, error } = await supabase!
+      const { data, error } = await getSupabase()!
         .from('user_preferences')
         .insert({
           user_id: userId,
@@ -297,7 +304,7 @@ export async function updateUserPreferences(userId: string, updates: Partial<Use
     'user_preferences',
     async () => {
       // Try to update first
-      const { data, error } = await supabase!
+      const { data, error } = await getSupabase()!
         .from('user_preferences')
         .update(updates)
         .eq('user_id', userId)
@@ -328,7 +335,7 @@ export async function getUserIntegrations(userId: string): Promise<UserIntegrati
   return safeOperation(
     'user_integrations',
     async () => {
-      const { data, error } = await supabase!
+      const { data, error } = await getSupabase()!
         .from('user_integrations')
         .select('*')
         .eq('user_id', userId)
@@ -364,7 +371,7 @@ export async function upsertUserIntegration(userId: string, serviceName: string,
   return safeOperation(
     'user_integrations',
     async () => {
-      const { error } = await supabase!
+      const { error } = await getSupabase()!
         .from('user_integrations')
         .upsert({
           user_id: userId,
@@ -386,7 +393,7 @@ export async function disconnectUserIntegration(userId: string, serviceName: str
   return safeOperation(
     'user_integrations',
     async () => {
-      const { error } = await supabase!
+      const { error } = await getSupabase()!
         .from('user_integrations')
         .update({ 
           is_connected: false,
@@ -413,7 +420,7 @@ export async function getUserSecuritySettings(userId: string): Promise<UserSecur
   return safeOperation(
     'user_security_settings',
     async () => {
-      const { data, error } = await supabase!
+      const { data, error } = await getSupabase()!
         .from('user_security_settings')
         .select('*')
         .eq('user_id', userId)
@@ -451,7 +458,7 @@ export async function createUserSecuritySettings(userId: string): Promise<UserSe
   return safeOperation(
     'user_security_settings',
     async () => {
-      const { data, error } = await supabase!
+      const { data, error } = await getSupabase()!
         .from('user_security_settings')
         .insert({
           user_id: userId,
@@ -475,7 +482,7 @@ export async function updateUserSecuritySettings(userId: string, updates: Partia
   return safeOperation(
     'user_security_settings',
     async () => {
-      const { data, error } = await supabase!
+      const { data, error } = await getSupabase()!
         .from('user_security_settings')
         .update(updates)
         .eq('user_id', userId)
@@ -527,6 +534,7 @@ export function clearSettingsCache(): void {
 }
 
 export async function checkSupabaseConnection(): Promise<boolean> {
+  const supabase = getSupabase()
   if (!supabase) return false
   
   try {
