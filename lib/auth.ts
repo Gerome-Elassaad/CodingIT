@@ -5,8 +5,6 @@ import { Session } from '@supabase/supabase-js'
 import { usePostHog } from 'posthog-js/react'
 import { useState, useEffect } from 'react'
 
-const supabase = createBrowserClient();
-
 type UserTeam = {
   email: string
   id: string
@@ -17,7 +15,10 @@ type UserTeam = {
 export async function getUserTeam(
   session: Session,
 ): Promise<UserTeam | undefined> {
-  const { data: defaultTeam } = await supabase!
+  const supabase = createBrowserClient()
+  if (!supabase) return undefined
+
+  const { data: defaultTeam } = await supabase
     .from('users_teams')
     .select('teams (id, name, tier, email)')
     .eq('user_id', session?.user.id)
@@ -37,6 +38,8 @@ export function useAuth(
   const posthog = usePostHog()
 
   useEffect(() => {
+    const supabase = createBrowserClient()
+    
     if (!supabase) {
       console.warn('Supabase is not initialized')
       return setSession({ user: { email: 'demo@codinit.dev' } } as Session)
