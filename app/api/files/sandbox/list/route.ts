@@ -29,24 +29,28 @@ async function listFilesRecursively(
 }
 
 const E2B_API_KEY = process.env.E2B_API_KEY
-if (!E2B_API_KEY) {
-  throw new Error('E2B_API_KEY environment variable not found')
-}
 
 const sandboxTimeout = 10 * 60 * 1000
 
 export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams
-  const sandboxId = searchParams.get('sandboxId')
-
-  if (!sandboxId) {
-    return NextResponse.json(
-      { error: 'sandboxId is required' },
-      { status: 400 },
-    )
-  }
-
   try {
+    if (!E2B_API_KEY) {
+      return NextResponse.json(
+        { error: 'E2B_API_KEY environment variable not found' },
+        { status: 500 },
+      )
+    }
+
+    const searchParams = request.nextUrl.searchParams
+    const sandboxId = searchParams.get('sandboxId')
+
+    if (!sandboxId) {
+      return NextResponse.json(
+        { error: 'sandboxId is required' },
+        { status: 400 },
+      )
+    }
+
     // Connect to existing sandbox by ID
     const sandbox = await Sandbox.connect(sandboxId, {
       apiKey: E2B_API_KEY,

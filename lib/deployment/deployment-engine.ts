@@ -320,7 +320,6 @@ export const deploymentProviders: DeploymentProvider[] = [
 ]
 
 export class DeploymentEngine {
-  [x: string]: any
   private deployments = new Map<string, DeploymentStatus>()
   private deploymentHistory = new Map<string, DeploymentResult[]>()
 
@@ -738,28 +737,6 @@ gatherUsageStats = false
     // - Resource caching
   }
 
-  private async deployToProvider(
-    deployment: DeploymentStatus,
-    fragment: FragmentSchema,
-    config: DeploymentConfig
-  ): Promise<DeploymentResult> {
-    deployment.status = 'deploying'
-    deployment.progress = 80
-    deployment.currentStep = `Deploying to ${config.provider.name}`
-    deployment.logs.push(`🚀 Deploying to ${config.provider.name}...`)
-
-    // Simulate deployment based on provider
-    const result = await this.simulateProviderDeployment(deployment, fragment, config)
-    
-    deployment.progress = 100
-    deployment.status = 'success'
-    deployment.deployedAt = new Date()
-    deployment.url = result.url
-    deployment.previewUrl = result.previewUrl
-    
-    return result
-  }
-
   private async deployToActualProvider(
     deployment: DeploymentStatus,
     fragment: FragmentSchema,
@@ -768,18 +745,50 @@ gatherUsageStats = false
     const provider = config.provider
     const deploymentId = deployment.deploymentId
     
+    deployment.status = 'deploying'
+    deployment.progress = 80
+    deployment.currentStep = `Deploying to ${config.provider.name}`
+    deployment.logs.push(`🚀 Deploying to ${config.provider.name}...`)
+    
     try {
       switch (provider.id) {
         case 'vercel':
-          return await this.deployToVercel(deployment, fragment, config)
+          const result = await this.deployToVercel(deployment, fragment, config)
+          deployment.progress = 100
+          deployment.status = 'success'
+          deployment.deployedAt = new Date()
+          deployment.url = result.url
+          deployment.previewUrl = result.previewUrl
+          return result
         case 'netlify':
-          return await this.deployToNetlify(deployment, fragment, config)
+          const netlifyResult = await this.deployToNetlify(deployment, fragment, config)
+          deployment.progress = 100
+          deployment.status = 'success'
+          deployment.deployedAt = new Date()
+          deployment.url = netlifyResult.url
+          deployment.previewUrl = netlifyResult.previewUrl
+          return netlifyResult
         case 'railway':
-          return await this.deployToRailway(deployment, fragment, config)
+          const railwayResult = await this.deployToRailway(deployment, fragment, config)
+          deployment.progress = 100
+          deployment.status = 'success'
+          deployment.deployedAt = new Date()
+          deployment.url = railwayResult.url
+          return railwayResult
         case 'render':
-          return await this.deployToRender(deployment, fragment, config)
+          const renderResult = await this.deployToRender(deployment, fragment, config)
+          deployment.progress = 100
+          deployment.status = 'success'
+          deployment.deployedAt = new Date()
+          deployment.url = renderResult.url
+          return renderResult
         case 'fly-io':
-          return await this.deployToFly(deployment, fragment, config)
+          const flyResult = await this.deployToFly(deployment, fragment, config)
+          deployment.progress = 100
+          deployment.status = 'success'
+          deployment.deployedAt = new Date()
+          deployment.url = flyResult.url
+          return flyResult
         default:
           throw new Error(`Provider ${provider.id} not implemented`)
       }

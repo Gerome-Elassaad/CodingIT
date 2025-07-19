@@ -3,9 +3,6 @@ import 'server-only';
 import { Sandbox } from '@e2b/code-interpreter';
 
 const E2B_API_KEY = process.env.E2B_API_KEY;
-if (!E2B_API_KEY) {
-  throw new Error('E2B_API_KEY environment variable not found');
-}
 
 const sandboxTimeout = 10 * 60 * 1000;
 
@@ -13,6 +10,10 @@ export async function evaluateCode(
   sessionID: string,
   code: string,
 ) {
+  if (!E2B_API_KEY) {
+    throw new Error('E2B_API_KEY environment variable not found');
+  }
+
   const sandbox = await getSandbox(sessionID);
 
   // Execute the code in a Jupyter Notebook in the sandbox.
@@ -35,6 +36,10 @@ export async function evaluateCode(
 
 
 async function getSandbox(sessionID: string) {
+  if (!E2B_API_KEY) {
+    throw new Error('E2B_API_KEY environment variable not found');
+  }
+
   const sandboxes = await Sandbox.list();
 
   const sandboxID = sandboxes.find(sandbox => sandbox.metadata?.sessionID === sessionID)?.sandboxId;

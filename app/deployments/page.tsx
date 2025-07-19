@@ -24,9 +24,12 @@ import {
 } from 'lucide-react'
 import { toast } from '@/components/ui/use-toast'
 import { useAuth } from '@/lib/auth'
+import { ViewType } from '@/components/auth'
 
 export default function DeploymentsPage() {
-  const { session } = useAuth(() => {}, () => {})
+  const [authDialog, setAuthDialog] = useState(false)
+  const [authView, setAuthView] = useState<ViewType>('sign_in')
+  const { session } = useAuth(setAuthDialog, setAuthView)
   const [deployments, setDeployments] = useState<DeploymentResult[]>([])
   const [activeDeployments, setActiveDeployments] = useState<DeploymentStatus[]>([])
   const [selectedFragment, setSelectedFragment] = useState<FragmentSchema | null>(null)

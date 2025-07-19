@@ -2,9 +2,6 @@ import { NextResponse } from 'next/server'
 import { Sandbox } from '@e2b/code-interpreter'
 
 const E2B_API_KEY = process.env.E2B_API_KEY
-if (!E2B_API_KEY) {
-  throw new Error('E2B_API_KEY environment variable not found')
-}
 
 const sandboxTimeout = 10 * 60 * 1000
 
@@ -22,6 +19,13 @@ async function getSandbox(sessionID: string, template?: string) {
 
 export async function GET(req: Request) {
   try {
+    if (!E2B_API_KEY) {
+      return NextResponse.json(
+        { error: 'E2B_API_KEY environment variable not found' },
+        { status: 500 },
+      )
+    }
+
     const { searchParams } = new URL(req.url)
     const sessionID = searchParams.get('sessionID')
     const path = searchParams.get('path')

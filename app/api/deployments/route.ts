@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic'
 // POST /api/deployments - Deploy fragment
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerClient()
+    const supabase = createServerClient(true)
     const { data: { session } } = await supabase.auth.getSession()
 
     if (!session?.user?.id) {
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
 // GET /api/deployments - List deployments
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerClient()
+    const supabase = createServerClient(true)
     const { data: { session } } = await supabase.auth.getSession()
 
     if (!session?.user?.id) {

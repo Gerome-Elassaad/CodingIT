@@ -10,7 +10,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const supabase = createServerClient()
+    const supabase = createServerClient(true)
     const { data: { session } } = await supabase.auth.getSession()
 
     if (!session?.user?.id) {
@@ -42,7 +42,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const supabase = createServerClient()
+    const supabase = createServerClient(true)
     const { data: { session } } = await supabase.auth.getSession()
 
     if (!session?.user?.id) {

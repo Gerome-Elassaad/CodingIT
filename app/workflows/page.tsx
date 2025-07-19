@@ -11,9 +11,12 @@ import { WorkflowSchema } from '@/lib/workflow-engine'
 import { Plus, Search, Play, Edit, Trash2, Copy, GitBranch } from 'lucide-react'
 import { toast } from '@/components/ui/use-toast'
 import { useAuth } from '@/lib/auth'
+import { ViewType } from '@/components/auth'
 
 export default function WorkflowsPage() {
-  const { session } = useAuth(() => {}, () => {})
+  const [authDialog, setAuthDialog] = useState(false)
+  const [authView, setAuthView] = useState<ViewType>('sign_in')
+  const { session } = useAuth(setAuthDialog, setAuthView)
   const [workflows, setWorkflows] = useState<WorkflowSchema[]>([])
   const [selectedWorkflow, setSelectedWorkflow] = useState<WorkflowSchema | null>(null)
   const [searchTerm, setSearchTerm] = useState('')

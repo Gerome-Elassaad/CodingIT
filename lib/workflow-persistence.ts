@@ -127,10 +127,23 @@ export class WorkflowPersistence {
 
   constructor() {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseServiceKey = process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
     if (!supabaseUrl || !supabaseServiceKey) {
-      throw new Error('Supabase URL and service key are required.')
+      console.warn('Supabase configuration is incomplete. Some features may not work.')
+      // Create a mock client to prevent build errors
+      this.supabase = {
+        from: () => ({
+          select: () => ({ single: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }) }),
+          insert: () => ({ select: () => ({ single: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }) }) }),
+          update: () => ({ eq: () => ({ select: () => ({ single: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }) }) }) }),
+          delete: () => ({ eq: () => Promise.resolve({ error: new Error('Supabase not configured') }) }),
+          eq: () => ({ single: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }) }),
+          order: () => ({ range: () => Promise.resolve({ data: [], error: new Error('Supabase not configured'), count: 0 }) }),
+          range: () => Promise.resolve({ data: [], error: new Error('Supabase not configured'), count: 0 })
+        })
+      } as any
+      return
     }
     this.supabase = createClient<Database>(supabaseUrl, supabaseServiceKey)
   }
