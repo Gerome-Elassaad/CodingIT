@@ -22,6 +22,7 @@ import {
 import { useAuth } from '@/lib/auth'
 import { ScrollArea } from './ui/scroll-area'
 import { useUpgradeDialog } from './upgrade-dialog'
+import { API_BASE_URL } from '@/lib/config'
 
 interface GitHubRepo {
   id: number
@@ -73,7 +74,7 @@ export function GitHubImport({ onImport, onClose }: GitHubImportProps) {
 
     setIsLoading(true)
     try {
-      const response = await fetch('/api/integrations/github/repos')
+      const response = await fetch(`${API_BASE_URL}/api/integrations/github/repos`)
       if (!response.ok) {
         throw new Error('Failed to fetch repositories')
       }
@@ -115,7 +116,7 @@ export function GitHubImport({ onImport, onClose }: GitHubImportProps) {
     
     try {
       // Use the new import API endpoint
-      const response = await fetch('/api/integrations/github/import', {
+      const response = await fetch(`${API_BASE_URL}/api/integrations/github/import`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -182,7 +183,7 @@ export function GitHubImport({ onImport, onClose }: GitHubImportProps) {
       if (item.type === 'file') {
         try {
           const fileResponse = await fetch(
-            `/api/integrations/github/repos/${owner}/${repo}?path=${item.path}`
+            `${API_BASE_URL}/api/integrations/github/repos/${owner}/${repo}?path=${item.path}`
           )
           
           if (fileResponse.ok) {
@@ -201,7 +202,7 @@ export function GitHubImport({ onImport, onClose }: GitHubImportProps) {
       } else if (item.type === 'dir') {
         try {
           const dirResponse = await fetch(
-            `/api/integrations/github/repos/${owner}/${repo}?path=${item.path}`
+            `${API_BASE_URL}/api/integrations/github/repos/${owner}/${repo}?path=${item.path}`
           )
           
           if (dirResponse.ok) {

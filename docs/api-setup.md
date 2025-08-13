@@ -664,9 +664,3 @@ Automatic webhook setup for GitHub repositories enables:
 ### Community
 - [GitHub Repository](https://github.com/Gerome-Elassaad/CodingIT)
 - [Issues & Feature Requests](https://github.com/Gerome-Elassaad/CodingIT/issues)
-
----
-
-**Last Updated**: December 2024  
-**API Version**: 1.0.0  
-**Total Endpoints**: 27

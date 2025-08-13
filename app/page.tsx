@@ -27,6 +27,7 @@ import { useLocalStorage } from 'usehooks-ts'
 import { useEnhancedChat } from '@/hooks/use-enhanced-chat'
 import { HeroPillSecond } from '@/components/announcement'
 import templatesData from '@/lib/templates'
+import { API_BASE_URL } from '@/lib/config'
 
 export default function Home() {
   const supabase = createSupabaseBrowserClient()
@@ -93,7 +94,7 @@ export default function Home() {
   }, [lastMessage])
 
   const { object, submit, isLoading, stop, error } = useObject({
-    api: '/api/chat',
+    api: `${API_BASE_URL}/api/chat`,
     schema,
     onError: (error) => {
       console.error('Error submitting request:', error)
@@ -134,7 +135,7 @@ export default function Home() {
           template: fragment?.template,
         })
 
-        const response = await fetch('/api/sandbox', {
+        const response = await fetch(`${API_BASE_URL}/api/sandbox`, {
           method: 'POST',
           body: JSON.stringify({
             fragment,

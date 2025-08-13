@@ -7,6 +7,7 @@ import { ExecutionResult } from '@/lib/types'
 import { Terminal, X, Copy, RefreshCw } from 'lucide-react'
 import { useState, useRef, useEffect, KeyboardEvent } from 'react'
 import { CopyButton } from './ui/copy-button'
+import { API_BASE_URL } from '@/lib/config'
 
 interface TerminalEntry {
   id: string
@@ -62,7 +63,7 @@ export function FragmentTerminal({ result, teamID, accessToken }: FragmentTermin
     setIsExecuting(true)
 
     try {
-      const response = await fetch('/api/terminal', {
+      const response = await fetch(`${API_BASE_URL}/api/terminal`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -91,7 +92,7 @@ export function FragmentTerminal({ result, teamID, accessToken }: FragmentTermin
 
       // Update working directory if command was cd
       if (command.trim().startsWith('cd') && !data.error && !data.stderr) {
-        const pwdResponse = await fetch('/api/terminal', {
+        const pwdResponse = await fetch(`${API_BASE_URL}/api/terminal`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

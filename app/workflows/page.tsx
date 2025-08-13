@@ -13,6 +13,7 @@ import { toast } from '@/components/ui/use-toast'
 import { useAuth } from '@/lib/auth'
 import { ViewType } from '@/components/auth'
 import { useFeatureFlag, useFeatureValue } from '@/hooks/use-edge-flags'
+import { API_BASE_URL } from '@/lib/config'
 
 export default function WorkflowsPage() {
   const [, setAuthDialog] = useState(false)
@@ -36,7 +37,7 @@ export default function WorkflowsPage() {
   const loadWorkflows = async () => {
     setIsLoading(true)
     try {
-      const response = await fetch('/api/workflows')
+      const response = await fetch(`${API_BASE_URL}/api/workflows`)
       if (!response.ok) throw new Error('Failed to load workflows')
       
       const data = await response.json()
@@ -67,7 +68,7 @@ export default function WorkflowsPage() {
         triggers: []
       }
 
-      const response = await fetch('/api/workflows', {
+      const response = await fetch(`${API_BASE_URL}/api/workflows`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newWorkflow)
@@ -97,7 +98,7 @@ export default function WorkflowsPage() {
 
   const updateWorkflow = async (workflow: WorkflowSchema) => {
     try {
-      const response = await fetch(`/api/workflows/${workflow.id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/workflows/${workflow.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(workflow)
@@ -122,7 +123,7 @@ export default function WorkflowsPage() {
 
   const executeWorkflow = async (workflow: WorkflowSchema) => {
     try {
-      const response = await fetch(`/api/workflows/${workflow.id}/execute`, {
+      const response = await fetch(`${API_BASE_URL}/api/workflows/${workflow.id}/execute`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ inputData: {} })
@@ -150,7 +151,7 @@ export default function WorkflowsPage() {
     if (!confirm('Are you sure you want to delete this workflow?')) return
 
     try {
-      const response = await fetch(`/api/workflows/${workflowId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/workflows/${workflowId}`, {
         method: 'DELETE'
       })
 

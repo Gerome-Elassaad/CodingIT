@@ -78,7 +78,8 @@
   "overrides": {
     "prismjs": "^1.30.0",
     "highlight.js": "11.9.0",
-    "tmp": "^0.2.3"
+    "tmp": "^0.2.3",
+    "path-to-regexp": "^6.3.0"
   },
   "devDependencies": {
     "@swc/cli": "^0.7.8",
@@ -92,6 +93,7 @@
     "@types/react-dom": "^18",
     "@types/react-syntax-highlighter": "^15.5.13",
     "@types/uuid": "^10.0.0",
+    "@vercel/node": "^5.3.11",
     "autoprefixer": "^10.4.21",
     "eslint": "^8",
     "eslint-config-next": "14.2.4",

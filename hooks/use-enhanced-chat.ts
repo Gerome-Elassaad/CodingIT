@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from 'react'
 import { useChat } from 'ai/react'
 import { Templates } from '@/lib/templates'
 import { LLMModel, LLMModelConfig } from '@/lib/models'
+import { API_BASE_URL } from '@/lib/config'
 
 export interface Message {
   id?: string
@@ -33,7 +34,7 @@ export function useEnhancedChat(chatConfig: EnhancedChatConfig) {
   })
 
   const { messages, input, setInput, append, isLoading, stop, error, setMessages } = useChat({
-    api: '/api/chat',
+    api: `${API_BASE_URL}/api/chat`,
     body: {
       userID: chatConfig.userID,
       teamID: chatConfig.teamID,
@@ -122,7 +123,7 @@ export function useEnhancedChat(chatConfig: EnhancedChatConfig) {
       setIsExecuting(true)
 
       try {
-        const response = await fetch('/api/code/execute', {
+        const response = await fetch(`${API_BASE_URL}/api/code/execute`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

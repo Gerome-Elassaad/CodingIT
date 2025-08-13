@@ -25,6 +25,7 @@ import {
 import { toast } from '@/components/ui/use-toast'
 import { useAuth } from '@/lib/auth'
 import { ViewType } from '@/components/auth'
+import { API_BASE_URL } from '@/lib/config'
 
 export default function DeploymentsPage() {
   const [authDialog, setAuthDialog] = useState(false)
@@ -45,7 +46,7 @@ export default function DeploymentsPage() {
   const loadDeployments = async () => {
     setIsLoading(true)
     try {
-      const response = await fetch('/api/deployments')
+      const response = await fetch(`${API_BASE_URL}/api/deployments`)
       if (!response.ok) throw new Error('Failed to load deployments')
       
       const data = await response.json()
@@ -67,7 +68,7 @@ export default function DeploymentsPage() {
 
     setIsDeploying(true)
     try {
-      const response = await fetch('/api/deployments', {
+      const response = await fetch(`${API_BASE_URL}/api/deployments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fragment, config })
@@ -105,7 +106,7 @@ export default function DeploymentsPage() {
       if (polls >= maxPolls) return
       
       try {
-        const response = await fetch(`/api/deployments/${deploymentId}`)
+        const response = await fetch(`${API_BASE_URL}/api/deployments/${deploymentId}`)
         if (!response.ok) throw new Error('Failed to get deployment status')
         
         const status = await response.json()
@@ -151,7 +152,7 @@ export default function DeploymentsPage() {
 
   const cancelDeployment = async (deploymentId: string) => {
     try {
-      const response = await fetch(`/api/deployments/${deploymentId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/deployments/${deploymentId}`, {
         method: 'DELETE'
       })
 
@@ -175,7 +176,7 @@ export default function DeploymentsPage() {
 
   const rollbackDeployment = async (deploymentId: string) => {
     try {
-      const response = await fetch(`/api/deployments/${deploymentId}/rollback`, {
+      const response = await fetch(`${API_BASE_URL}/api/deployments/${deploymentId}/rollback`, {
         method: 'POST'
       })
 

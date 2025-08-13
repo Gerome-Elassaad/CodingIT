@@ -8,6 +8,7 @@ import { useAuth } from '@/lib/auth'
 import { Button } from './ui/button'
 import { Github, FolderOpen } from 'lucide-react'
 import Spinner from './ui/spinner'
+import { API_BASE_URL } from '@/lib/config'
 
 export function IDE() {
   const { session, loading } = useAuth(() => {}, () => {})
@@ -21,7 +22,7 @@ export function IDE() {
   const fetchFiles = useCallback(async () => {
     if (!session) return
     try {
-      const response = await fetch(`/api/files?sessionID=${session.user.id}`)
+      const response = await fetch(`${API_BASE_URL}/api/files?sessionID=${session.user.id}`)
       if (response.ok) {
         const data = await response.json()
         setFiles(data)
@@ -51,14 +52,14 @@ export function IDE() {
 
   async function handleSelectFile(path: string) {
     if (!session) return
-    const response = await fetch(`/api/files/content?sessionID=${session.user.id}&path=${path}`)
+    const response = await fetch(`${API_BASE_URL}/api/files/content?sessionID=${session.user.id}&path=${path}`)
     const { content } = await response.json()
     setSelectedFile({ path, content })
   }
 
   async function handleSaveFile(path: string, content: string) {
     if (!session) return
-    await fetch('/api/files/content', {
+    await fetch(`${API_BASE_URL}/api/files/content`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -70,7 +71,7 @@ export function IDE() {
   async function handleCreateFile(path: string, isDirectory: boolean) {
     if (!session) return
     try {
-      const response = await fetch('/api/files', {
+      const response = await fetch(`${API_BASE_URL}/api/files`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -93,7 +94,7 @@ export function IDE() {
   async function handleDeleteFile(path: string) {
     if (!session) return
     try {
-      const response = await fetch('/api/files', {
+      const response = await fetch(`${API_BASE_URL}/api/files`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -119,7 +120,7 @@ export function IDE() {
     try {
       // Import each file from the repository
       for (const file of repoFiles) {
-        await fetch('/api/files/content', {
+        await fetch(`${API_BASE_URL}/api/files/content`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

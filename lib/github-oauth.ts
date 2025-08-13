@@ -1,4 +1,5 @@
 import { nanoid } from 'nanoid'
+import { API_BASE_URL } from '@/lib/config'
 
 export interface GitHubOAuthConfig {
   clientId: string
@@ -99,7 +100,7 @@ export function getGitHubScopes(): string[] {
 
 export async function revokeGitHubToken(accessToken: string): Promise<boolean> {
   try {
-    const response = await fetch('/api/auth/github/revoke', {
+    const response = await fetch(`${API_BASE_URL}/api/auth/github/revoke`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -129,7 +130,7 @@ export async function fetchGitHubRepositories(options?: {
     if (options?.sort) params.append('sort', options.sort)
     if (options?.type) params.append('type', options.type)
 
-    const response = await fetch(`/api/integrations/github/repos?${params.toString()}`)
+    const response = await fetch(`${API_BASE_URL}/api/integrations/github/repos?${params.toString()}`)
     
     if (!response.ok) {
       throw new Error('Failed to fetch repositories')

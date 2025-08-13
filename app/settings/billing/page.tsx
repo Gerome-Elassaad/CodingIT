@@ -29,6 +29,7 @@ import { useFeatureFlag, useFeatureValue } from '@/hooks/use-edge-flags'
 import ErrorBoundary, { SettingsSection } from '@/components/error-boundary'
 import { STRIPE_PLANS, formatPrice } from '@/lib/stripe'
 import { useSearchParams } from 'next/navigation'
+import { API_BASE_URL } from '@/lib/config'
 
 interface BillingData {
   subscription: {
@@ -93,7 +94,7 @@ function BillingSettingsContent() {
     const loadBillingData = async () => {
       setIsLoading(true)
       try {
-        const response = await fetch('/api/subscription/usage')
+        const response = await fetch(`${API_BASE_URL}/api/subscription/usage`)
         if (response.ok) {
           const data = await response.json()
           setBillingData(data)
@@ -150,7 +151,7 @@ function BillingSettingsContent() {
   const handleUpgrade = async (planType: string) => {
     setIsUpdating(true)
     try {
-      const response = await fetch('/api/stripe/checkout', {
+      const response = await fetch(`${API_BASE_URL}/api/stripe/checkout`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ planType })
@@ -178,7 +179,7 @@ function BillingSettingsContent() {
   const handleManageBilling = async () => {
     setIsUpdating(true)
     try {
-      const response = await fetch('/api/stripe/portal', {
+      const response = await fetch(`${API_BASE_URL}/api/stripe/portal`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       })

@@ -7,6 +7,7 @@ import { CheckCircle, X, Zap, Star, Crown, Loader2, ArrowUp } from 'lucide-react
 import { useState } from 'react'
 import { useToast } from '@/components/ui/use-toast'
 import { STRIPE_PLANS, formatPrice } from '@/lib/stripe'
+import { API_BASE_URL } from '@/lib/config'
 
 interface UpgradeDialogProps {
   isOpen: boolean
@@ -33,7 +34,7 @@ export function UpgradeDialog({
   const handleUpgrade = async (planType: string) => {
     setIsUpgrading(true)
     try {
-      const response = await fetch('/api/stripe/checkout', {
+      const response = await fetch(`${API_BASE_URL}/api/stripe/checkout`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ planType })

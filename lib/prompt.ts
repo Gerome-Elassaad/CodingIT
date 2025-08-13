@@ -73,6 +73,9 @@ const FRAGMENT_SCHEMA = `
 Fragment Schema Compliance
 - Adhere to fragmentSchema defined in @/lib/schema
 - Include: commentary, template, title, description, additional_dependencies, has_additional_dependencies, install_dependencies_command, port, file_path, code
+- For multi-file projects: set is_multi_file: true and include files array with additional files
+- Main file always goes in code/file_path for backward compatibility
+- Additional files go in files array as {file_path, file_content} objects
 - Ensure isolated sandbox execution within 10-minute timeout
 - Implement state persistence via fragment schema and E2B sandbox API
 `
@@ -81,32 +84,39 @@ const TEMPLATE_IMPLEMENTATION = `
 Template-Specific Implementation
 
 code-interpreter-v1 (Python Data Analysis)
-- File: script.py, Port: null
+- Main File: script.py, Port: null
 - Use: pandas, numpy, matplotlib, seaborn, plotly, scipy, scikit-learn
 - Structure code as executable Python scripts with type hints and docstrings
+- For multi-file: create utils.py, data_processing.py, visualization.py as needed
 - Include data validation and error handling
 
 nextjs-developer (Next.js Applications)
-- File: pages/index.tsx, Port: 3000
+- Main File: pages/index.tsx, Port: 3000
 - Use: TypeScript (strict mode), shadcn/ui, Tailwind CSS, pages router
+- For multi-file: create components/, lib/, styles/, pages/api/ structure
+- Multi-file examples: components/Layout.tsx, lib/utils.ts, styles/globals.css
 - Implement SEO, API routes, authentication patterns
 - Stack: Next.js 14+, TypeScript, Tailwind CSS, shadcn/ui
 
 vue-developer (Vue.js Applications)
-- File: app.vue, Port: 3000
+- Main File: app.vue, Port: 3000
 - Use: Composition API with <script setup>, Nuxt 3, Tailwind CSS
+- For multi-file: create components/, composables/, plugins/ structure
+- Multi-file examples: components/Header.vue, composables/useApi.ts
 - Implement component composition, Pinia for state management
 - Stack: Vue 3, Nuxt 3, Composition API, Tailwind CSS
 
 streamlit-developer (Streamlit Apps)
-- File: app.py, Port: 8501
+- Main File: app.py, Port: 8501
 - Use: Streamlit components, session state management, st.cache
+- For multi-file: create utils.py, data_loader.py, visualizations.py
 - Libraries: streamlit, pandas, numpy, matplotlib, plotly
 - Structure for automatic reloading
 
 gradio-developer (Gradio Apps)
-- File: app.py, Port: 7860
+- Main File: app.py, Port: 7860
 - Use: Gradio Blocks or Interface patterns, name main interface 'demo'
+- For multi-file: create model.py, preprocessing.py, utils.py
 - Libraries: gradio, pandas, numpy, matplotlib, transformers
 - Implement proper input/output handling
 `
@@ -232,8 +242,18 @@ Mandatory Compliance
 - Use only libraries available in template's lib array
 - Respect template port configurations
 
+Multi-File Project Guidelines
+- For simple scripts or demos: use single file approach (is_multi_file: false)
+- For complex applications: use multi-file approach (is_multi_file: true)
+- Always put main executable code in code/file_path fields
+- Put additional supporting files in files array
+- Create logical file structure (components/, lib/, utils/, etc.)
+- Ensure proper imports and exports between files
+- Main file should be runnable and import other files as needed
+
 Response Format
 - Analyze requirements to select appropriate template
+- Determine if single-file or multi-file approach is appropriate
 - Provide complete, runnable implementations
 - Include necessary setup and dependencies
 - Follow template conventions and patterns
