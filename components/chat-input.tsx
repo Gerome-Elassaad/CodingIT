@@ -1,5 +1,6 @@
 'use client'
 
+import { cn } from '@/lib/utils'
 import { RepoBanner } from './repo-banner'
 import { Button } from '@/components/ui/button'
 import {
@@ -29,6 +30,7 @@ export function ChatInput({
   files,
   handleFileChange,
   children,
+  className,
 }: {
   retry: () => void
   isErrored: boolean
@@ -43,6 +45,7 @@ export function ChatInput({
   files: File[]
   handleFileChange: (change: SetStateAction<File[]>) => void
   children: React.ReactNode
+  className?: string
 }) {
   const placeholder = useTypingEffect(
     [
@@ -158,7 +161,7 @@ export function ChatInput({
     <form
       onSubmit={handleSubmit}
       onKeyDown={onEnter}
-      className="mb-2 mt-auto flex flex-col bg-transparent"
+      className={cn('mb-2 flex flex-col bg-transparent', className)}
       onDragEnter={isMultiModal ? handleDrag : undefined}
       onDragLeave={isMultiModal ? handleDrag : undefined}
       onDragOver={isMultiModal ? handleDrag : undefined}
@@ -184,7 +187,6 @@ export function ChatInput({
         </div>
       )}
       <div className="relative">
-        <RepoBanner className="absolute bottom-full inset-x-2 translate-y-1 z-0 pb-2" />
         <div
           className={`shadow-md rounded-2xl relative z-10 bg-background border ${
             dragActive

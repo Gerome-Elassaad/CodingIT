@@ -477,7 +477,7 @@ export default function Home() {
   }
 
   return (
-    <main className="flex min-h-screen max-h-screen">
+    <main className="flex flex-col min-h-screen max-h-screen">
       {supabase && (
         <AuthDialog
           open={isAuthDialogOpen}
@@ -495,11 +495,11 @@ export default function Home() {
       )}
 
       <div className={cn(
-        "grid w-full md:grid-cols-2 transition-all duration-300",
+        "grid w-full h-full md:grid-cols-2 transition-all duration-300 flex-grow",
         session ? "ml-16" : ""
       )}>
         <div
-          className={`flex flex-col w-full max-h-full max-w-[800px] mx-auto px-4 overflow-auto ${fragment ? 'col-span-1' : 'col-span-2'}`}
+          className={`flex flex-col w-full h-full max-w-[800px] mx-auto px-4 overflow-auto ${fragment ? 'col-span-1' : 'col-span-2'}`}
         >
           <NavBar
             session={session}
@@ -512,26 +512,29 @@ export default function Home() {
             onUndo={handleUndo}
           />
           
-          <div className="flex justify-center mb-4">
-            <HeroPillSecond />
-          </div>
-
-          {isLoadingProject ? (
-            <div className="flex items-center justify-center h-32">
-              <div className="text-muted-foreground">Loading project...</div>
-            </div>
-          ) : (
-            <Chat
-              messages={messages}
-              isLoading={isLoading}
-              setCurrentPreview={setCurrentPreview}
-              executeCode={executeCode}
-            />
-          )}
-          
-          <ChatInput
-            retry={retry}
-            isErrored={error !== undefined}
+          <div className={cn('flex flex-col w-full flex-grow', messages.length === 0 ? 'items-center justify-center' : 'justify-end')}>
+            {messages.length === 0 && !isLoadingProject ? (
+              <div className="text-center px-4">
+                <h1 className="text-4xl font-bold tracking-tight mb-4">
+                  Build anything, fast.
+                </h1>
+                <p className="text-lg text-muted-foreground mb-8">
+                  Tell CodinIT what you want to create, and it will build it for you.
+                </p>
+              </div>
+            ) : (
+              <Chat
+                messages={messages}
+                isLoading={isLoading}
+                setCurrentPreview={setCurrentPreview}
+                executeCode={executeCode}
+              />
+            )}
+            
+            <ChatInput
+              className={cn('w-full', messages.length === 0 ? '' : 'mt-auto')}
+              retry={retry}
+              isErrored={error !== undefined}
             errorMessage={errorMessage}
             isLoading={isLoading}
             isRateLimited={isRateLimited}
@@ -558,6 +561,7 @@ export default function Home() {
               baseURLConfigurable={!process.env.NEXT_PUBLIC_NO_BASE_URL_INPUT}
             />
           </ChatInput>
+          </div>
         </div>
           <Preview
           teamID={userTeam?.id}

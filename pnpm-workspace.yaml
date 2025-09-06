@@ -1,0 +1,8 @@
+onlyBuiltDependencies:
+  - '@swc/core'
+  - '@vercel/speed-insights'
+  - core-js
+  - esbuild
+  - protobufjs
+  - sharp
+  - unrs-resolver

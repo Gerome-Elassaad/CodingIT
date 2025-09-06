@@ -11,10 +11,7 @@ import { useTheme } from 'next-themes'
 import { useState, useEffect } from 'react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/lib/auth'
-import { 
-  getUserPreferences, 
-  updateUserPreferences} from '@/lib/user-settings'
-import { useFeatureFlag, useFeatureValue } from '@/hooks/use-edge-flags'
+import { getUserPreferences, updateUserPreferences } from '@/lib/user-settings'
 
 const themes = [
   {
@@ -63,8 +60,8 @@ export default function AppearanceSettings() {
   const { session } = useAuth(() => {}, () => {})
   const { toast } = useToast()
   
-  const { enabled: hasThemeCustomization } = useFeatureFlag('theme-customization', false)
-  const { value: userSubscriptionTier } = useFeatureValue<'free' | 'pro' | 'enterprise'>('subscription-tier', 'free')
+  const hasThemeCustomization = true
+  const userSubscriptionTier = 'pro'
 
   const [selectedTheme, setSelectedTheme] = useState<'light' | 'dark' | 'system'>('system')
   const [selectedFont, setSelectedFont] = useState<'inter' | 'jetbrains-mono' | 'cal-sans'>('inter')
@@ -474,41 +471,6 @@ export default function AppearanceSettings() {
                   Action Button
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-      
-      {!hasThemeCustomization && userSubscriptionTier === 'free' && (
-        <Card className="border-dashed">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Palette className="w-5 h-5" />
-              Advanced Theme Customization
-            </CardTitle>
-            <CardDescription>
-              Unlock advanced theming options with accent colors, custom radius, and more.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-              <div className="flex flex-col items-center p-4 border rounded-lg opacity-60">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 mb-2" />
-                <span className="text-xs font-medium">Custom Colors</span>
-              </div>
-              <div className="flex flex-col items-center p-4 border rounded-lg opacity-60">
-                <div className="w-8 h-8 rounded-2xl bg-gray-300 mb-2" />
-                <span className="text-xs font-medium">Border Radius</span>
-              </div>
-              <div className="flex flex-col items-center p-4 border rounded-lg opacity-60">
-                <Sparkles className="w-8 h-8 text-gray-400 mb-2" />
-                <span className="text-xs font-medium">Animations</span>
-              </div>
-            </div>
-            <div className="text-center">
-              <button className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium">
-                Upgrade to Pro
-              </button>
             </div>
           </CardContent>
         </Card>
