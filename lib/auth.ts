@@ -1,10 +1,8 @@
-import { createSupabaseBrowserClient } from './supabase-browser'
+import { supabase } from './supabase-client'
 import { ViewType } from '@/components/auth'
 import { Session, AuthChangeEvent } from '@supabase/supabase-js'
 import { usePostHog } from 'posthog-js/react'
 import { useState, useEffect } from 'react'
-
-const supabase = createSupabaseBrowserClient();
 
 export function useAuth(
   setAuthDialog: (value: boolean) => void,

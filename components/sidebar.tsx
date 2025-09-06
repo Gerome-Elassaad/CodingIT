@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
-import { createSupabaseBrowserClient } from '@/lib/supabase-browser';
+import { supabase } from '@/lib/supabase-client';
 import { getProjects, Project, deleteProject } from '@/lib/database';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -67,7 +67,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const handleDeleteChat = async (chatId: string) => {
-    const supabase = createSupabaseBrowserClient();
     await deleteProject(supabase, chatId);
     setChatHistory(chatHistory.filter(chat => chat.id !== chatId));
   };
@@ -112,8 +111,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   React.useEffect(() => {
-    const supabase = createSupabaseBrowserClient();
-    
     // Skip authentication setup if Supabase is not available (development mode)
     if (!supabase) {
       return;

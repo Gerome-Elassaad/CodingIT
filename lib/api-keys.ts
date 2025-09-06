@@ -1,8 +1,8 @@
 import { SupabaseClient } from '@supabase/supabase-js'
-import { createSupabaseBrowserClient } from './supabase-browser'
+import { supabase } from './supabase-client'
 import { createHash } from 'crypto'
 
-const browserSupabase = createSupabaseBrowserClient()
+const browserSupabase = supabase
 
 export interface ApiKey {
   id: string

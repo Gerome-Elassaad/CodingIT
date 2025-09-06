@@ -1,4 +1,4 @@
-import { createSupabaseBrowserClient } from './supabase-browser'
+import { supabase } from './supabase-client'
 
 // Advanced User Segmentation and Behavioral Classification
 // This system creates valuable data segments for monetization and product development
@@ -77,7 +77,7 @@ export interface RiskProfile {
 
 export class UserSegmentationService {
   private static instance: UserSegmentationService
-  private supabase = createSupabaseBrowserClient()
+  private supabase = supabase
 
   private constructor() {}
 
@@ -344,9 +344,9 @@ export class UserSegmentationService {
 
       if (!userTeam) return null
 
-      const teamId = userTeam.teams.id
-      const userTier = userTeam.teams.tier || 'free'
-      const signupDate = new Date(userTeam.users.created_at)
+      const teamId = (userTeam.teams as any).id
+      const userTier = (userTeam.teams as any).tier || 'free'
+      const signupDate = new Date((userTeam.users as any).created_at)
 
       // Calculate behavior scores
       const behaviorScore = await this.calculateBehaviorScore(userId)

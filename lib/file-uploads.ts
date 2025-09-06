@@ -1,7 +1,7 @@
 import { SupabaseClient } from '@supabase/supabase-js'
-import { createSupabaseBrowserClient } from './supabase-browser'
+import { supabase } from './supabase-client'
 
-const browserSupabase = createSupabaseBrowserClient()
+const browserSupabase = supabase
 
 export interface FileUpload {
   id: string

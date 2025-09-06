@@ -20,7 +20,7 @@ import {
 } from 'lucide-react'
 import { useState, useEffect, useCallback } from 'react'
 import { useAuthContext } from '@/lib/auth-provider'
-import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
+import { supabase } from '@/lib/supabase-client'
 import { 
   getUserProfile, 
   getUserPreferences, 
@@ -51,7 +51,6 @@ interface FormErrors {
 export default function AccountSettings() {
   const { session, loading: authLoading } = useAuthContext()
   const { toast } = useToast()
-  const supabase = createSupabaseBrowserClient()
   
   // Consolidated form state
   const [formData, setFormData] = useState<AccountFormData>({

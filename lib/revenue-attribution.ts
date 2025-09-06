@@ -1,4 +1,4 @@
-import { createSupabaseBrowserClient } from './supabase-browser'
+import { supabase } from './supabase-client'
 import { AnalyticsService } from './analytics-service'
 
 // Revenue Attribution System
@@ -48,7 +48,7 @@ export interface FeatureValueAnalysis {
 
 export class RevenueAttributionService {
   private static instance: RevenueAttributionService
-  private supabase = createSupabaseBrowserClient()
+  private supabase = supabase
   
   private constructor() {}
 
@@ -66,6 +66,7 @@ export class RevenueAttributionService {
     properties: Record<string, any>,
     revenueImpact?: number
   ): Promise<void> {
+    if (!this.supabase) return
     try {
       // Get user's team information
       const { data: userTeam } = await this.supabase
@@ -84,7 +85,7 @@ export class RevenueAttributionService {
       const calculatedImpact = revenueImpact || this.calculateRevenueImpact(eventType, properties, currentTier)
 
       // Store revenue attribution record
-      await this.supabase.from('revenue_attributions').insert({
+      await this.supabase!.from('revenue_attributions').insert({
         user_id: userId,
         team_id: teamId,
         event_type: eventType,
@@ -202,6 +203,7 @@ export class RevenueAttributionService {
     properties: Record<string, any>,
     revenueImpact: number
   ): Promise<void> {
+    if (!this.supabase) return
     try {
       // Get or create conversion path
       let { data: pathData } = await this.supabase
@@ -221,7 +223,7 @@ export class RevenueAttributionService {
       if (pathData) {
         // Update existing path
         const touchpoints = pathData.touchpoints ? [...pathData.touchpoints, touchpoint] : [touchpoint]
-        await this.supabase
+        await this.supabase!
           .from('conversion_paths')
           .update({ 
             touchpoints,
@@ -230,7 +232,7 @@ export class RevenueAttributionService {
           .eq('id', pathData.id)
       } else {
         // Create new path
-        await this.supabase.from('conversion_paths').insert({
+        await this.supabase!.from('conversion_paths').insert({
           user_id: userId,
           team_id: teamId,
           touchpoints: [touchpoint],
@@ -250,6 +252,7 @@ export class RevenueAttributionService {
     revenueAmount: number,
     attributionModel: 'first_touch' | 'last_touch' | 'linear' | 'time_decay' | 'position_based' = 'linear'
   ): Promise<void> {
+    if (!this.supabase) return
     try {
       // Get active conversion path
       const { data: pathData } = await this.supabase
@@ -265,7 +268,7 @@ export class RevenueAttributionService {
       const attributionWeights = this.calculateAttributionWeights(pathData.touchpoints, attributionModel)
 
       // Update path with conversion
-      await this.supabase
+      await this.supabase!
         .from('conversion_paths')
         .update({
           conversion_event: {
@@ -287,7 +290,7 @@ export class RevenueAttributionService {
         const weight = attributionWeights[i]
         const attributedRevenue = revenueAmount * weight
 
-        await this.supabase.from('revenue_attributions').insert({
+        await this.supabase!.from('revenue_attributions').insert({
           user_id: userId,
           team_id: pathData.team_id,
           event_type: touchpoint.eventType,
@@ -347,6 +350,7 @@ export class RevenueAttributionService {
     featureName: string,
     timeRangeMonths: number = 6
   ): Promise<FeatureValueAnalysis[]> {
+    if (!this.supabase) return []
     try {
       const startDate = new Date()
       startDate.setMonth(startDate.getMonth() - timeRangeMonths)
@@ -411,6 +415,12 @@ export class RevenueAttributionService {
     conversionPaths: Array<{ pathLength: number; conversionRate: number; averageRevenue: number }>
     featureImpact: Array<{ feature: string; revenueImpact: number; usageCount: number }>
   }> {
+    if (!this.supabase) return {
+      totalAttributedRevenue: 0,
+      topRevenueEvents: [],
+      conversionPaths: [],
+      featureImpact: []
+    }
     try {
       const startDate = new Date()
       startDate.setMonth(startDate.getMonth() - timeRangeMonths)
@@ -452,7 +462,7 @@ export class RevenueAttributionService {
         .slice(0, 10)
 
       // Analyze conversion paths
-      const { data: paths } = await this.supabase
+      const { data: paths } = await this.supabase!
         .from('conversion_paths')
         .select('*')
         .eq('team_id', teamId)

@@ -15,7 +15,8 @@ import { Message, toAISDKMessages, toMessageImage } from '@/lib/messages'
 import { LLMModelConfig } from '@/lib/models'
 import modelsList from '@/lib/models.json'
 import { FragmentSchema, fragmentSchema as schema } from '@/lib/schema'
-import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
+import { supabase } from '@/lib/supabase-client'
+import { SupabaseClient } from '@supabase/supabase-js'
 import templates, { TemplateId } from '@/lib/templates'
 import { ExecutionResult } from '@/lib/types'
 import { cn } from '@/lib/utils'
@@ -30,7 +31,6 @@ import { HeroPillSecond } from '@/components/announcement'
 import { useAnalytics } from '@/lib/analytics-service'
 
 export default function Home() {
-  const supabase = createSupabaseBrowserClient()
   const [chatInput, setChatInput] = useLocalStorage('chat', '')
   const [files, setFiles] = useState<File[]>([])
   const [selectedTemplate, setSelectedTemplate] = useState<'auto' | TemplateId>('auto')
@@ -483,7 +483,7 @@ export default function Home() {
           open={isAuthDialogOpen}
           setOpen={setAuthDialog}
           view={authView}
-          supabase={supabase}
+          supabase={supabase as unknown as SupabaseClient}
         />
       )}
 

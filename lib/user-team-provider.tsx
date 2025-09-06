@@ -3,9 +3,7 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { Session } from '@supabase/supabase-js'
 import { LRUCache } from 'lru-cache'
-import { createSupabaseBrowserClient } from './supabase-browser'
-
-const supabase = createSupabaseBrowserClient()
+import { supabase } from './supabase-client'
 
 type UserTeam = {
   email: string
