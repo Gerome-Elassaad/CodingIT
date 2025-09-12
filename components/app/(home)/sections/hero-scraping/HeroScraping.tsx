@@ -1,314 +1,319 @@
 "use client";
 
-import { animate } from "motion";
-import { useEffect, useRef, useState } from "react";
+interface SearchResult {
+  url: string;
+  title: string;
+  description: string;
+  screenshot: string | null;
+  markdown: string;
+}
 
-import CurvyRect from "@/components/shared/layout/curvy-rect";
-import { sleep } from "@/utils/sleep";
+interface HeroScrapingProps {
+  showSearchTiles: boolean;
+  hasSearched: boolean;
+  isFadingOut: boolean;
+  isSearching: boolean;
+  searchResults: SearchResult[];
+  handleSubmit: (selectedResult?: SearchResult) => void;
+  showInstructionsForIndex: number | null;
+  setShowInstructionsForIndex: (index: number | null) => void;
+  additionalInstructions: string;
+  setAdditionalInstructions: (instructions: string) => void;
+}
 
-import BrowserMobile from "./_svg/BrowserMobile";
-import BrowserTab from "./_svg/BrowserTab";
-import HeroScrapingCode from "./Code/Code";
-import HeroScrapingTag from "./Tag/Tag";
-
-import "./HeroScraping.css";
-
-export default function HeroScraping() {
-  const [step, setStep] = useState(-1);
-
-  const navigationRef = useRef<HTMLDivElement>(null);
-  const buttonRef = useRef<HTMLDivElement>(null);
-  const h1Ref = useRef<HTMLDivElement>(null);
-  const descriptionRef = useRef<HTMLDivElement>(null);
-  const ctaRef = useRef<HTMLDivElement>(null);
-  const highlightRef = useRef<HTMLDivElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const wrapElement = async (
-      element: HTMLElement,
-      { borderRadius }: { borderRadius?: number } = {},
-    ) => {
-      if (!containerRef.current) return;
-
-      const containerBnds = containerRef.current.getBoundingClientRect();
-      const elementBnds = element.getBoundingClientRect();
-
-      if (!highlightRef.current) return;
-
-      try {
-        if (highlightRef.current) {
-        await animate(highlightRef.current, { opacity: 0 }, { duration: 0.3 });
-      }
-      } catch (error) {
-        console.error("Error animating highlight:", error);
-      }
-
-      if (!highlightRef.current) return;
-
-      Object.assign(highlightRef.current.style, {
-        left: elementBnds.left - containerBnds.left - 4 + "px",
-        top: elementBnds.top - containerBnds.top - 4 + "px",
-        width: elementBnds.width + 8 + "px",
-        height: elementBnds.height + 8 + "px",
-        borderRadius: borderRadius ? `${borderRadius}px` : undefined,
-      });
-
-      try {
-        await animate(
-          highlightRef.current,
-          { opacity: [1, 0.5, 0.3, 0.8, 0.6, 0.9, 0.7, 1] },
-          { duration: 0.4 },
-        );
-      } catch (error) {
-        console.error("Error animating highlight:", error);
-      }
-    };
-
-    const start = async () => {
-      setStep(0);
-      if (!highlightRef.current) return;
-      
-      await animate(highlightRef.current, {
-        scale: 1,
-        opacity: 1,
-      });
-
-      await sleep(700);
-
-      setTimeout(() => setStep(1), 300);
-      if (navigationRef.current) {
-        await wrapElement(navigationRef.current);
-      }
-
-      await sleep(1200);
-
-      setTimeout(() => setStep(2), 300);
-      if (buttonRef.current) {
-        await wrapElement(buttonRef.current);
-      }
-
-      await sleep(1200);
-
-      setTimeout(() => setStep(3), 300);
-      if (h1Ref.current) {
-        await wrapElement(h1Ref.current, { borderRadius: 12 });
-      }
-
-      await sleep(1200);
-
-      setTimeout(() => setStep(4), 300);
-      if (descriptionRef.current) {
-        await wrapElement(descriptionRef.current, { borderRadius: 8 });
-      }
-
-      await sleep(1200);
-
-      setTimeout(() => setStep(5), 300);
-      if (ctaRef.current) {
-        await wrapElement(ctaRef.current, { borderRadius: 24 });
-      }
-
-      await sleep(1500);
-      setTimeout(() => setStep(6), 300);
-
-      if (highlightRef.current) {
-        await animate(highlightRef.current, { opacity: 0 }, { duration: 0.3 });
-      }
-    };
-
-    let started = false;
-
-    const onScroll = () => {
-      if (started) return;
-
-      if (window.scrollY > 100) {
-        started = true;
-        start();
-        window.removeEventListener("scroll", onScroll);
-      }
-    };
-
-    setTimeout(() => {
-      if (started) return;
-
-      started = true;
-      start();
-      window.removeEventListener("scroll", onScroll);
-    }, 2000);
-
-    window.addEventListener("scroll", onScroll);
-
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
+export default function HeroScraping({
+  showSearchTiles,
+  hasSearched,
+  isFadingOut,
+  isSearching,
+  searchResults,
+  handleSubmit,
+  showInstructionsForIndex,
+  setShowInstructionsForIndex,
+  additionalInstructions,
+  setAdditionalInstructions,
+}: HeroScrapingProps) {
   return (
-    <div
-      className="pt-56 lg:pt-25 lg:px-25 container -mt-36 relative"
-      ref={containerRef}
-    >
-      <div className="h-53 absolute top-[calc(100%-1px)] w-full left-0">
-        <div className="h-1 bg-border-faint bottom-0 left-0 w-full absolute" />
-      </div>
+    <>
+      {showSearchTiles && hasSearched && (
+        <section className={`carousel-section relative w-full overflow-hidden mt-32 mb-32 transition-opacity duration-500 ${isFadingOut ? 'opacity-0' : 'opacity-100'}`}>
+          <div className="absolute inset-0 bg-gradient-to-b from-gray-50/50 to-white rounded-[50%] transform scale-x-150 -translate-y-24" />
 
-      <div
-        className="left-61 top-89 rounded-[16px] size-32 absolute hero-scraping-highlight inside-border before:border-border-loud opacity-0 scale-[0.9]"
-        ref={highlightRef}
-      />
+          {isSearching ? (
+            <div className="relative h-[250px] overflow-hidden">
+              <div className="absolute left-0 top-0 bottom-0 w-[120px] z-20 pointer-events-none" style={{ background: 'linear-gradient(to right, white 0%, white 20%, transparent 100%)' }} />
+              <div className="absolute right-0 top-0 bottom-0 w-[120px] z-20 pointer-events-none" style={{ background: 'linear-gradient(to left, white 0%, white 20%, transparent 100%)' }} />
 
-      <div className="overlay lg-max:hidden">
-        <div className="h-1 absolute bottom-0 w-full left-0 bg-border-faint" />
-        <CurvyRect className="overlay" bottom />
-      </div>
-
-      <div className="lg:h-370 rounded-t-16 lg-max:pt-70 relative">
-        <div className="overlay mask-border lg-max:hidden p-1 bg-gradient-to-b from-black/7 to-transparent" />
-
-        <div className="top-17 left-17 flex gap-8 items-center absolute lg-max:hidden">
-          {Array.from({ length: 3 }).map((_, index) => (
-            <div
-              className="w-10 h-10 rounded-full relative inside-border before:border-border-muted"
-              key={index}
-            />
-          ))}
-        </div>
-
-        <div className="pt-42 lg:px-6">
-          <BrowserMobile className="absolute top-0 cw-316 lg:hidden" />
-
-          <BrowserTab className="absolute top-[7.5px] left-70 lg-max:hidden bg-background-base z-[1]" />
-          <div className="absolute size-18 top-17 left-89 lg-max:hidden inside-border before:border-border-muted z-[2] rounded-full" />
-
-          <div className="rounded-t-16 relative lg:h-330 lg:p-6">
-            <div className="overlay mask-border lg-max:hidden p-1 bg-gradient-to-b from-black/7 to-transparent" />
-
-            <div className="lg:h-322 rounded-t-10 relative">
-              <div className="overlay mask-border lg-max:hidden p-1 bg-gradient-to-b z-[2] from-black/7 to-transparent" />
-
-              <div className="px-28 lg-max:hidden py-20 flex justify-between items-center relative border-b border-border-faint">
-                <div className="flex gap-8 items-center relative">
-                  <div className="size-24 rounded-full relative inside-border before:border-border-muted" />
-                  <div className="w-64 h-12 rounded-full relative inside-border before:border-border-muted" />
-
-                  {step >= 0 && (
-                    <HeroScrapingTag
-                      active={step === 0}
-                      className="absolute left-[calc(100%+24px)] top-0"
-                      initial={{ x: -12, opacity: 0 }}
-                      label="Logo"
-                    />
-                  )}
-                </div>
-
-                <div
-                  className="absolute top-24 center-x flex gap-8"
-                  ref={navigationRef}
-                >
-                  {step >= 1 && (
-                    <HeroScrapingTag
-                      active={step === 1}
-                      className="absolute right-[calc(100%+20px)] -top-4"
-                      initial={{ x: 12, opacity: 0 }}
-                      label="Navigation"
-                    />
-                  )}
-
-                  {Array.from({ length: 4 }).map((_, index) => (
-                    <div
-                      className="w-64 h-16 rounded-full relative inside-border before:border-border-muted"
-                      key={index}
-                    />
-                  ))}
-                </div>
-
-                <div
-                  className="w-72 h-24 rounded-full relative inside-border before:border-border-muted"
-                  ref={buttonRef}
-                >
-                  {step >= 2 && (
-                    <HeroScrapingTag
-                      active={step === 2}
-                      className="absolute right-[calc(100%+20px)] top-0"
-                      initial={{ x: 12, opacity: 0 }}
-                      label="Button"
-                    />
-                  )}
-                </div>
-              </div>
-
-              <div className="lg:grid grid-cols-2">
-                <div className="pt-40 pl-151 flex gap-16 relative lg-max:hidden">
-                  <CurvyRect
-                    className="size-32 -top-1 -right-1 absolute"
-                    topRight
-                  />
-
-                  <div className="h-53 lg-max:hidden -left-37 bottom-1 absolute w-65">
-                    <CurvyRect className="overlay" left />
-                  </div>
-
-                  <div>
-                    <div
-                      className="flex gap-16 mb-16 flex-wrap w-300 relative"
-                      ref={h1Ref}
-                    >
-                      {step >= 3 && (
-                        <HeroScrapingTag
-                          active={step === 3}
-                          className="absolute right-[calc(100%+16px)] top-0"
-                          initial={{ x: 12, opacity: 0 }}
-                          label="H1 Title"
-                        />
-                      )}
-                      <div className="w-144 h-32 rounded-8 relative inside-border before:border-border-muted" />
-                      <div className="w-82 h-32 rounded-8 relative inside-border before:border-border-muted" />
-                      <div className="w-100 h-32 rounded-8 relative inside-border before:border-border-muted" />
-                      <div className="w-180 h-32 rounded-8 relative inside-border before:border-border-muted" />
+              <div className="carousel-container absolute left-0 flex gap-12 py-4">
+                {[...Array(10), ...Array(10)].map((_, index) => (
+                  <div
+                    key={`loading-${index}`}
+                    className="flex-shrink-0 w-[400px] h-[240px] rounded-lg overflow-hidden border-2 border-gray-200/30 bg-white relative"
+                  >
+                    <div className="absolute inset-0 skeleton-shimmer">
+                      <div className="absolute inset-0 bg-gradient-to-r from-gray-100 via-gray-50 to-gray-100 skeleton-gradient" />
                     </div>
-
-                    <div
-                      className="flex gap-6 mb-32 flex-wrap w-300 relative"
-                      ref={descriptionRef}
-                    >
-                      {step >= 4 && (
-                        <HeroScrapingTag
-                          active={step === 4}
-                          className="absolute top-0 right-[calc(100%+16px)]"
-                          initial={{ x: 12, opacity: 0 }}
-                          label="Description"
-                        />
-                      )}
-
-                      <div className="w-131 h-10 rounded-full relative inside-border before:border-border-muted" />
-                      <div className="w-72 h-10 rounded-full relative inside-border before:border-border-muted" />
-                      <div className="w-34 h-10 rounded-full relative inside-border before:border-border-muted" />
-                      <div className="w-56 h-10 rounded-full relative inside-border before:border-border-muted" />
-                      <div className="w-116 h-10 rounded-full relative inside-border before:border-border-muted" />
-                      <div className="w-116 h-10 rounded-full relative inside-border before:border-border-muted" />
+                    <div className="absolute top-0 left-0 right-0 h-40 bg-gray-100 border-b border-gray-200/50 flex items-center px-6 gap-4">
+                      <div className="flex gap-3">
+                        <div className="w-5 h-5 rounded-full bg-gray-300 animate-pulse" />
+                        <div className="w-5 h-5 rounded-full bg-gray-300 animate-pulse" style={{ animationDelay: '0.1s' }} />
+                        <div className="w-5 h-5 rounded-full bg-gray-300 animate-pulse" style={{ animationDelay: '0.2s' }} />
+                      </div>
+                      <div className="flex-1 h-8 bg-gray-200 rounded-md mx-6 animate-pulse" />
                     </div>
-
-                    <div
-                      className="w-64 h-24 rounded-full relative inside-border before:border-border-muted"
-                      ref={ctaRef}
-                    >
-                      {step >= 5 && (
-                        <HeroScrapingTag
-                          active={step === 5}
-                          className="absolute top-0 right-[calc(100%+16px)]"
-                          initial={{ x: 12, opacity: 0 }}
-                          label="CTA Button"
-                        />
-                      )}
+                    <div className="absolute top-44 left-4 right-4">
+                      <div className="h-3 bg-gray-200 rounded w-3/4 mb-2 animate-pulse" />
+                      <div className="h-3 bg-gray-150 rounded w-1/2 mb-2 animate-pulse" style={{ animationDelay: '0.2s' }} />
+                      <div className="h-3 bg-gray-150 rounded w-2/3 animate-pulse" style={{ animationDelay: '0.3s' }} />
                     </div>
                   </div>
-                </div>
-
-                <HeroScrapingCode step={step} />
+                ))}
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
+          ) : searchResults.length > 0 ? (
+            <div className="relative h-[250px] overflow-hidden">
+              <div className="absolute left-0 top-0 bottom-0 w-[120px] z-20 pointer-events-none" style={{ background: 'linear-gradient(to right, white 0%, white 20%, transparent 100%)' }} />
+              <div className="absolute right-0 top-0 bottom-0 w-[120px] z-20 pointer-events-none" style={{ background: 'linear-gradient(to left, white 0%, white 20%, transparent 100%)' }} />
+
+              <div className="carousel-container absolute left-0 flex gap-12 py-4">
+                {[...searchResults, ...searchResults].map((result, index) => (
+                  <div
+                    key={`${result.url}-${index}`}
+                    className="group flex-shrink-0 w-[400px] h-[240px] rounded-lg overflow-hidden border-2 border-gray-200/50 transition-all duration-300 hover:shadow-2xl bg-white relative"
+                    onMouseLeave={() => {
+                      if (showInstructionsForIndex === index) {
+                        setShowInstructionsForIndex(null);
+                        setAdditionalInstructions('');
+                      }
+                    }}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 flex flex-col items-center justify-center p-6">
+                      {showInstructionsForIndex === index ? (
+                        <div className="w-full max-w-[380px]">
+                          <div className="bg-white rounded-20" style={{
+                            boxShadow: "0px 0px 44px 0px rgba(0, 0, 0, 0.02), 0px 88px 56px -20px rgba(0, 0, 0, 0.03), 0px 56px 56px -20px rgba(0, 0, 0, 0.02), 0px 32px 32px -20px rgba(0, 0, 0, 0.03), 0px 16px 24px -12px rgba(0, 0, 0, 0.03), 0px 0px 0px 1px rgba(0, 0, 0, 0.05)"
+                          }}>
+                            <div className="p-16 flex gap-12 items-start w-full relative">
+                              <div className="mt-2 flex-shrink-0">
+                                <svg
+                                  width="20"
+                                  height="20"
+                                  viewBox="0 0 20 20"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="opacity-40"
+                                >
+                                  <path d="M5 5H15M5 10H15M5 15H10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                </svg>
+                              </div>
+                              <textarea
+                                value={additionalInstructions}
+                                onChange={(e) => setAdditionalInstructions(e.target.value)}
+                                placeholder="Describe your customizations..."
+                                className="flex-1 bg-transparent text-body-input text-accent-black placeholder:text-black-alpha-48 focus:outline-none focus:ring-0 focus:border-transparent resize-none min-h-[60px]"
+                                autoFocus
+                                onClick={(e) => e.stopPropagation()}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Escape') {
+                                    e.stopPropagation();
+                                    setShowInstructionsForIndex(null);
+                                    setAdditionalInstructions('');
+                                  }
+                                }}
+                              />
+                            </div>
+                            <div className="border-t border-black-alpha-5" />
+                            <div className="p-10 flex justify-between items-center">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setShowInstructionsForIndex(null);
+                                  setAdditionalInstructions('');
+                                }}
+                                className="button relative rounded-10 px-8 py-8 text-label-medium font-medium flex items-center justify-center bg-black-alpha-4 hover:bg-black-alpha-6 text-black-alpha-48 active:scale-[0.995] transition-all"
+                              >
+                                <svg
+                                  width="20"
+                                  height="20"
+                                  viewBox="0 0 20 20"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <path d="M12 5L7 10L12 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (additionalInstructions.trim()) {
+                                    sessionStorage.setItem('additionalInstructions', additionalInstructions);
+                                    handleSubmit(result);
+                                  }
+                                }}
+                                disabled={!additionalInstructions.trim()}
+                                className={`
+                                    button relative rounded-10 px-8 py-8 text-label-medium font-medium
+                                    flex items-center justify-center gap-6
+                                    ${additionalInstructions.trim()
+                                    ? 'button-primary text-accent-white active:scale-[0.995]'
+                                    : 'bg-black-alpha-4 text-black-alpha-24 cursor-not-allowed'}
+                                  `}
+                              >
+                                {additionalInstructions.trim() && <div className="button-background absolute inset-0 rounded-10 pointer-events-none" />}
+                                <span className="px-6 relative">Apply & Clone</span>
+                                <svg
+                                  width="20"
+                                  height="20"
+                                  viewBox="0 0 20 20"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="relative"
+                                >
+                                  <path d="M11.6667 4.79163L16.875 9.99994M16.875 9.99994L11.6667 15.2083M16.875 9.99994H3.125" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+                                </svg>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="text-white text-center mb-3">
+                            <p className="text-base font-semibold mb-0.5">{result.title}</p>
+                            <p className="text-[11px] opacity-80">Choose how to clone this site</p>
+                          </div>
+                          <div className="flex gap-3 justify-center">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSubmit(result);
+                              }}
+                              className="bg-orange-500 hover:bg-orange-600 flex items-center justify-center button relative text-label-medium button-primary group/button rounded-10 p-8 gap-2 text-white active:scale-[0.995]"
+                            >
+                              <div className="button-background absolute inset-0 rounded-10 pointer-events-none" />
+                              <svg
+                                width="20"
+                                height="20"
+                                viewBox="0 0 20 20"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="relative"
+                              >
+                                <path d="M11.6667 4.79163L16.875 9.99994M16.875 9.99994L11.6667 15.2083M16.875 9.99994H3.125" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+                              </svg>
+                              <span className="px-6 relative">Instant Clone</span>
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setShowInstructionsForIndex(index);
+                                setAdditionalInstructions('');
+                              }}
+                              className="bg-gray-100 hover:bg-gray-200 flex items-center justify-center button relative text-label-medium rounded-10 p-8 gap-2 text-gray-700 active:scale-[0.995]"
+                            >
+                              <svg
+                                width="20"
+                                height="20"
+                                viewBox="0 0 20 20"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="opacity-60"
+                              >
+                                <path d="M5 5H15M5 10H15M5 15H10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                <path d="M14 14L16 16L14 18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                              </svg>
+                              <span className="px-6">Add Instructions</span>
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                    {result.screenshot ? (
+                      <img
+                        src={result.screenshot}
+                        alt={result.title}
+                        className="w-full h-full object-cover object-top"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-50 flex items-center justify-center">
+                        <div className="text-center">
+                          <div className="w-16 h-16 rounded-full bg-gray-200 mx-auto mb-3 flex items-center justify-center">
+                            <svg
+                              width="32"
+                              height="32"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="text-gray-400"
+                            >
+                              <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="1.5" />
+                              <path d="M3 9H21" stroke="currentColor" strokeWidth="1.5" />
+                              <circle cx="6" cy="6" r="1" fill="currentColor" />
+                              <circle cx="9" cy="6" r="1" fill="currentColor" />
+                              <circle cx="12" cy="6" r="1" fill="currentColor" />
+                            </svg>
+                          </div>
+                          <p className="text-gray-500 text-sm font-medium">{result.title}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="relative h-[250px] flex items-center justify-center">
+              <div className="text-center">
+                <div className="mb-4">
+                  <svg className="w-16 h-16 mx-auto text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <p className="text-gray-500 text-lg">No results found</p>
+                <p className="text-gray-400 text-sm mt-1">Try a different search term</p>
+              </div>
+            </div>
+          )}
+        </section>
+      )}
+      <style jsx>{`
+        @keyframes infiniteScroll {
+          from {
+            transform: translateX(0);
+          }
+          to {
+            transform: translateX(-50%);
+          }
+        }
+
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .carousel-container {
+          animation: infiniteScroll 30s linear infinite;
+        }
+
+        .carousel-container:hover {
+          animation-play-state: paused;
+        }
+
+        .skeleton-shimmer {
+          position: relative;
+          overflow: hidden;
+        }
+
+        .skeleton-gradient {
+          animation: shimmer 2s infinite;
+        }
+      `}</style>
+    </>
   );
 }

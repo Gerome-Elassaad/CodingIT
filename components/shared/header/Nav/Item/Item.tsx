@@ -28,9 +28,9 @@ export default function HeaderNavItem({
           e.preventDefault();
         }
       }}
-      onMouseEnter={() => {
+      onMouseEnter={(e) => {
         if (dropdown) {
-          setDropdownContent(dropdown);
+          setDropdownContent(dropdown, e.currentTarget);
         } else {
           clearDropdown(true);
         }

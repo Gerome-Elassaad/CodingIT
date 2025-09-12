@@ -11,18 +11,20 @@ import { useHeaderObserver } from "@/hooks/useHeaderObserver";
 
 interface HeaderContextType {
   dropdownContent: React.ReactNode;
-  setDropdownContent: (content: React.ReactNode) => void;
+  setDropdownContent: (content: React.ReactNode, element: HTMLElement) => void;
   clearDropdown: (force?: boolean) => void;
   resetDropdownTimeout: () => void;
   dropdownKey: number;
   headerHeight: React.RefObject<number>;
   headerTop: React.RefObject<number>;
+  hoveredItemRef: React.RefObject<HTMLElement | null>;
 }
 
 const HeaderContext = createContext<HeaderContextType | undefined>(undefined);
 
 export const HeaderProvider = ({ children }: { children: React.ReactNode }) => {
   const [dropdownContent, setDropdownContent] = useState<React.ReactNode>(null);
+  const hoveredItemRef = useRef<HTMLElement | null>(null);
   const [dropdownKey, setDropdownKey] = useState(0);
   const headerHeight = useRef(0);
   const headerTop = useRef(0);
@@ -56,14 +58,16 @@ export const HeaderProvider = ({ children }: { children: React.ReactNode }) => {
     <HeaderContext.Provider
       value={{
         dropdownContent,
-        setDropdownContent: (content) => {
+        setDropdownContent: (content, element) => {
           resetDropdownTimeout();
+          hoveredItemRef.current = element;
 
           if (content === dropdownContent) return;
           setDropdownKey((prev) => prev + 1);
           setDropdownContent(content);
         },
         clearDropdown,
+        hoveredItemRef,
         resetDropdownTimeout,
         dropdownKey,
         headerHeight,

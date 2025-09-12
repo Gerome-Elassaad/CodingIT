@@ -23,7 +23,7 @@ export default function HeaderToggle({
         if (dropdownContent === headerDropdownContent) {
           clearDropdown(true);
         } else {
-          setDropdownContent(dropdownContent);
+          setDropdownContent(dropdownContent, document.body);
         }
       }}
     >

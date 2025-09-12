@@ -15,6 +15,7 @@ export default function HeaderDropdownWrapper() {
     dropdownKey,
     headerHeight,
     headerTop,
+    hoveredItemRef,
   } = useHeaderContext();
 
   useEffect(() => {
@@ -38,6 +39,9 @@ export default function HeaderDropdownWrapper() {
           initial={{ opacity: 0 }}
           style={{
             top: (headerTop.current ?? 0) + (headerHeight.current ?? 0) + 1,
+            left:
+              (hoveredItemRef.current?.offsetLeft ?? 0) -
+              (hoveredItemRef.current?.offsetWidth ?? 0) / 2,
           }}
           transition={{ duration: 0.3, ease: cubicBezier(0.4, 0, 0.2, 1) }}
         >
