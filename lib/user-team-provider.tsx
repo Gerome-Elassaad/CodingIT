@@ -31,18 +31,15 @@ export async function getUserTeam(
 
   const { data: defaultTeam } = await supabase!
     .from('users_teams')
-    .select('teams (id, name, tier, email)')
+    .select('teams!inner(id, name, tier, email)')
     .eq('user_id', session?.user.id)
     .eq('is_default', true)
     .limit(1)
     .single()
 
-  const userTeam = defaultTeam?.teams as unknown as UserTeam
-  if (userTeam) {
-    userTeamCache.set(cacheKey, userTeam)
+  if (defaultTeam) {
+    userTeamCache.set(cacheKey, defaultTeam)
   }
-
-  return userTeam
 }
 
 type UserTeamContextType = {

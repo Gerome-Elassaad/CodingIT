@@ -53,17 +53,17 @@ export function getPrompts(config) {
 export function getEnvPrompts(provider) {
   const prompts = [];
 
-  // Always include Firecrawl API key
+  // Always include Example API key
   prompts.push({
+    name: 'exampleApiKey',
     type: 'input',
-    name: 'firecrawlApiKey',
-    message: 'Firecrawl API key (for web scraping):',
+    message: 'Example API key (for web scraping):',
     validate: (input) => {
       if (!input || input.trim() === '') {
-        return 'Firecrawl API key is required for web scraping functionality';
+        return 'Example API key is required for web scraping functionality';
       }
       return true;
-    }
+    },
   });
 
   if (provider === 'e2b') {

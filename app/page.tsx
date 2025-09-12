@@ -21,7 +21,6 @@ import HeroInputSubmitButton from "@/components/app/(home)/sections/hero-input/B
 // import Globe from "@/components/app/(home)/sections/hero-input/_svg/Globe";
 
 // Import header components
-import HeaderBrandKit from "@/components/shared/header/BrandKit/BrandKit";
 import HeaderWrapper from "@/components/shared/header/Wrapper/Wrapper";
 import HeaderDropdownWrapper from "@/components/shared/header/Dropdown/Wrapper/Wrapper";
 import GithubIcon from "@/components/shared/header/Github/_svg/GithubIcon";
@@ -211,19 +210,12 @@ export default function HomePage() {
 
         <HeaderWrapper>
           <div className="max-w-[900px] mx-auto w-full flex justify-between items-center">
-            <div className="flex gap-24 items-center">
-              <HeaderBrandKit />
-            </div>
             <div className="flex gap-8">
               <a
                 className="contents"
-                href="https://github.com/mendableai/open-lovable"
+                href="https://github.com/Gerome-Elassaad/CodingIT"
                 target="_blank"
               >
-                <ButtonUI variant="tertiary">
-                  <GithubIcon />
-                  Use this Template
-                </ButtonUI>
               </a>
             </div>
           </div>
@@ -233,8 +225,6 @@ export default function HomePage() {
       {/* Hero Section */}
       <section className="overflow-x-clip" id="home-hero">
         <div className="pt-28 lg:pt-254 lg:-mt-100 pb-115 relative" id="hero-content">
-          <HomeHeroPixi />
-          <HeroFlame />
           <BackgroundOuterPiece />
           <HomeHeroBackground />
 
@@ -244,10 +234,6 @@ export default function HomePage() {
             <p className="text-center text-body-large">
               Re-imagine any website, in seconds.
             </p>
-            <img
-              src="/logo.png"
-              alt="Logo"
-              className="block mt-8 mx-auto w-auto h-30 lg:h-24" />
           </div>
         </div>
 

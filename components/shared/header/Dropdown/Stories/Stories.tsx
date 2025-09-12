@@ -6,7 +6,7 @@ export default function HeaderDropdownStories() {
   return (
     <a
       className="pt-32 pr-32 pl-44 pb-48 group block border-b border-border-faint relative overflow-clip"
-      href="/blog/how-replit-uses-firecrawl-to-power-ai-agents"
+      href="/blog/how-replit-uses-us-to-power-ai-agents"
     >
       <div className="flex mb-40 justify-between items-center">
         <div className="py-4 px-8 text-heat-100 text-[12px]/[16px] font-[450] bg-heat-8 rounded-6">
@@ -21,8 +21,7 @@ export default function HeaderDropdownStories() {
       <Replit />
 
       <div className="text-title-h5 mt-31 pr-32">
-        How Replit uses <span className="text-heat-100">Firecrawl</span> to
-        power Replit Agent
+        How Replit uses us to power Replit Agent
       </div>
 
       <StoriesFlame />

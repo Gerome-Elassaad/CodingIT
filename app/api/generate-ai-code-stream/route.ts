@@ -756,9 +756,7 @@ CRITICAL STYLING RULES - MUST FOLLOW:
 - NEVER create App.css, Component.css, or any component-specific CSS files
 - NEVER import './App.css' or any CSS files except index.css
 - ALWAYS use Tailwind CSS classes for ALL styling
-- ONLY create src/index.css with the @tailwind directives
-- The ONLY CSS file should be src/index.css with:
-  @tailwind base;
+- ONLY create src/index.css with the @tailwind base;
   @tailwind components;
   @tailwind utilities;
 - Use Tailwind's full utility set: spacing, colors, typography, flexbox, grid, animations, etc.

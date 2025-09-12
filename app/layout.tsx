@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Roboto_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
-import HeaderNav from "@/components/shared/header/Nav/Nav";
+import Header from "@/components/shared/header";
 import { HeaderProvider } from "@/components/shared/header/HeaderContext";
 
 const inter = Inter({ 
@@ -41,7 +41,7 @@ export default function RootLayout({
     <html>
       <body className={`${inter.variable} ${geistSans.variable} ${geistMono.variable} ${robotoMono.variable} font-sans`}>
         <HeaderProvider>
-          <HeaderNav />
+          <Header />
           {children}
         </HeaderProvider>
       </body>

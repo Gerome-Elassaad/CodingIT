@@ -5,7 +5,7 @@ This project is configured to use E2B sandboxes for code execution.
 ## Setup
 
 1. Get your E2B API key from [https://e2b.dev](https://e2b.dev)
-2. Get your Firecrawl API key from [https://firecrawl.dev](https://firecrawl.dev)
+2. Get your API key from the dashboard
 3. Copy `.env.example` to `.env` and add your API keys
 4. Run `npm install` to install dependencies
 5. Run `npm run dev` to start the development server

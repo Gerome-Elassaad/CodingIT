@@ -1,6 +1,6 @@
 /* Typography System */
 
-/* Font Face Declarations - matching firecrawl-marketing exactly */
+/* Font Face Declarations */
 @font-face {
   font-family: 'SuisseIntl';
   src: url('/fonts/SuisseIntl/400.woff2') format('woff2');
@@ -58,7 +58,7 @@
   text-wrap: pretty;
 }
 
-/* Utility text classes matching firecrawl-marketing - extending base classes */
+/* Utility text classes - extending base classes */
 .title-h1,
 .text-title-h1 {
   font-size: 4rem; /* 64px */
@@ -178,7 +178,7 @@
   line-height: 1.5;
 }
 
-/* Responsive Typography - matching firecrawl-marketing */
+/* Responsive Typography */
 @media (max-width: 1024px) {
   .text-body-large {
     font-size: 18px;

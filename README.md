@@ -4,6 +4,9 @@
 <p align="center">
   <a href="https://e2b.dev/startups">
     <img src="https://img.shields.io/badge/SPONSORED%20BY-E2B%20FOR%20STARTUPS-32CD32?style=for-the-badge" alt="SPONSORED BY E2B.DEV" />
+  </a> |
+  
+  <a <script src="https://uptime.betterstack.com/widgets/announcement.js" data-id="219064" async="async" type="text/javascript"></script>
   </a>
 </p>
 

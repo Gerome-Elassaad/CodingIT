@@ -1,6 +1,5 @@
 "use client";
 
-import { usePathname } from "next/navigation";
 import React, {
   createContext,
   useContext,
@@ -8,6 +7,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { useHeaderObserver } from "@/hooks/useHeaderObserver";
 
 interface HeaderContextType {
   dropdownContent: React.ReactNode;
@@ -26,9 +26,8 @@ export const HeaderProvider = ({ children }: { children: React.ReactNode }) => {
   const [dropdownKey, setDropdownKey] = useState(0);
   const headerHeight = useRef(0);
   const headerTop = useRef(0);
-  const pathname = usePathname();
   const timeout = useRef<number | null>(null);
-  const [mounted, setMounted] = useState(false);
+  useHeaderObserver();
 
   const clearDropdown = (force?: boolean) => {
     if (force) {
@@ -52,38 +51,6 @@ export const HeaderProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!mounted) return; // Only run this effect on the client after mounting
-
-    const header = document.querySelector(".header") as HTMLElement;
-
-    if (header) {
-      const resizeObserver = new ResizeObserver((entries) => {
-        for (const entry of entries) {
-          headerHeight.current = entry.contentRect.height;
-        }
-      });
-
-      resizeObserver.observe(header);
-      headerHeight.current = header.clientHeight;
-      headerTop.current = header.getBoundingClientRect().top;
-
-      const onScroll = () => {
-        headerTop.current = header.getBoundingClientRect().top;
-      };
-
-      window.addEventListener("scroll", onScroll, { passive: true });
-
-      return () => {
-        resizeObserver.disconnect();
-        window.removeEventListener("scroll", onScroll);
-      };
-    }
-  }, [pathname]);
 
   return (
     <HeaderContext.Provider

@@ -20,13 +20,13 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Container configuration from firecrawl-marketing */
+/* Container configuration */
 :root {
   --container-width: 1112px;
   --container-width-padding: 1144px;
 }
 
-/* Container implementation matching firecrawl-marketing */
+/* Container implementation */
 .container {
   max-width: min(calc(100% - 32px), var(--container-width));
   --padding: 16px;

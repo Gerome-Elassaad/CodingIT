@@ -51,7 +51,7 @@ importers:
         specifier: ^5.2.1
         version: 5.2.1(react-hook-form@7.62.0(react@18.3.1))
       '@mendable/firecrawl-js':
-        specifier: ^4.3.3
+        specifier: ^4.3.4
         version: 4.3.4
       '@monaco-editor/react':
         specifier: ^4.7.0

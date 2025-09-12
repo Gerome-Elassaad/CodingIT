@@ -1,5 +1,5 @@
 import Auth, { ViewType } from './auth'
-import { validateEmail } from '@/app/actions/validate-email'
+import { validateEmail } from '@/lib/utils'
 import Image from 'next/image'
 import {
   Dialog,

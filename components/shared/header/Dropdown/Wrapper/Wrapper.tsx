@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, cubicBezier, motion } from "motion/react";
+import { AnimatePresence, cubicBezier, motion } from "framer-motion";
 import { useEffect } from "react";
 
 import { Connector } from "@/components/shared/layout/curvy-rect";

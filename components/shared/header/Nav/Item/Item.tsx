@@ -5,8 +5,6 @@ import { JSX } from "react";
 import { useHeaderContext } from "@/components/shared/header/HeaderContext";
 import { cn } from "@/utils/cn";
 
-import ChevronDown from "./_svg/ChevronDown";
-
 export default function HeaderNavItem({
   label,
   href,
@@ -25,6 +23,11 @@ export default function HeaderNavItem({
     <a
       className="p-6 relative flex h-32 group rounded-8 active:scale-[0.98] transition-all duration-50 active:duration-100"
       href={href}
+      onClick={(e) => {
+        if (dropdown) {
+          e.preventDefault();
+        }
+      }}
       onMouseEnter={() => {
         if (dropdown) {
           setDropdownContent(dropdown);
@@ -46,8 +49,6 @@ export default function HeaderNavItem({
       />
 
       <span className="px-4 text-label-medium text-accent-black">{label}</span>
-
-      {dropdown && <ChevronDown />}
     </a>
   );
 }

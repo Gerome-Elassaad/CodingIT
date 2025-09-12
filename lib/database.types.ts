@@ -60,27 +60,32 @@ export interface UserSecuritySettings {
   updated_at: string
 }
 
+export type ProfileInsert = Omit<UserProfile, 'id' | 'created_at' | 'updated_at'>;
+export type UserPreferencesInsert = Omit<UserPreferences, 'id' | 'created_at' | 'updated_at'>;
+export type UserIntegrationInsert = Omit<UserIntegration, 'id' | 'created_at' | 'updated_at'>;
+export type UserSecuritySettingsInsert = Omit<UserSecuritySettings, 'id' | 'created_at' | 'updated_at'>;
+
 export type Database = {
   public: {
     Tables: {
       profiles: {
         Row: UserProfile;
-        Insert: Omit<UserProfile, 'id' | 'created_at' | 'updated_at'>;
+        Insert: ProfileInsert;
         Update: Partial<UserProfile>;
       };
       user_preferences: {
         Row: UserPreferences;
-        Insert: Omit<UserPreferences, 'id' | 'created_at' | 'updated_at'>;
+        Insert: UserPreferencesInsert;
         Update: Partial<UserPreferences>;
       };
       user_integrations: {
         Row: UserIntegration;
-        Insert: Omit<UserIntegration, 'id' | 'created_at' | 'updated_at'>;
+        Insert: UserIntegrationInsert;
         Update: Partial<UserIntegration>;
       };
       user_security_settings: {
         Row: UserSecuritySettings;
-        Insert: Omit<UserSecuritySettings, 'id' | 'created_at' | 'updated_at'>;
+        Insert: UserSecuritySettingsInsert;
         Update: Partial<UserSecuritySettings>;
       };
     };

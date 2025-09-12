@@ -18,10 +18,8 @@ import Lead from "./_svg/Lead";
 import Platforms from "./_svg/Platforms";
 import Research from "./_svg/Research";
 import Student from "./_svg/Student";
-import Templates from "./_svg/Templates";
 import HeaderNavItem from "./Item/Item";
 import MCPIcon from "./_svg/MCP";
-import Image from "@/components/shared/image/Image";
 import GithubFlame from "@/components/shared/header/Dropdown/Github/Flame/Flame";
 import EndpointsMap from "@/components/app/(home)/sections/endpoints/EndpointsMap/EndpointsMap";
 
@@ -55,7 +53,7 @@ export const NAV_ITEMS = [
                 ),
                 label: "Scrape",
                 description: "Turn any url into clean data",
-                href: "https://docs.firecrawl.dev/features/scrape",
+                href: "/scrape",
                 iconClassName: "-mt-1",
               },
               {
@@ -68,7 +66,7 @@ export const NAV_ITEMS = [
                 ),
                 label: "Crawl",
                 description: "Crawl entire websites",
-                href: "https://docs.firecrawl.dev/features/crawl",
+                href: "/crawl",
                 iconClassName: "-mt-1",
               },
               {
@@ -81,7 +79,7 @@ export const NAV_ITEMS = [
                 ),
                 label: "Search",
                 description: "Search and get page content",
-                href: "https://docs.firecrawl.dev/features/search",
+                href: "/search",
                 iconClassName: "-mt-1",
               },
               {
@@ -94,7 +92,7 @@ export const NAV_ITEMS = [
                 ),
                 label: "Map",
                 description: "Get all links from a website",
-                href: "https://docs.firecrawl.dev/features/map",
+                href: "/map",
                 iconClassName: "-mt-1",
               },
               {
@@ -106,8 +104,8 @@ export const NAV_ITEMS = [
                   />
                 ),
                 label: "MCP",
-                description: "Connect Firecrawl to agents",
-                href: "https://docs.firecrawl.dev/features/mcp",
+                description: "Connect to agents",
+                href: "/mcp",
                 iconClassName: "-mt-1",
               },
 
@@ -134,35 +132,35 @@ export const NAV_ITEMS = [
                 icon: <Chats />,
                 label: "AI Platforms",
                 description: "Let customers build AI apps",
-                href: "https://docs.firecrawl.dev/use-cases/ai-platforms",
+                href: "/use-cases/ai-platforms",
                 target: "_blank",
               },
               {
                 icon: <Lead />,
                 label: "Lead Enrichment",
                 description: "Enhance sales data",
-                href: "https://docs.firecrawl.dev/use-cases/lead-enrichment",
+                href: "/use-cases/lead-enrichment",
                 target: "_blank",
               },
               {
                 icon: <Platforms />,
                 label: "SEO Platforms",
                 description: "Power SEO/GEO tools",
-                href: "https://docs.firecrawl.dev/use-cases/seo-platforms",
+                href: "/use-cases/seo-platforms",
                 target: "_blank",
               },
               {
                 icon: <Research />,
                 label: "Deep Research",
                 description: "Build research agents",
-                href: "https://docs.firecrawl.dev/use-cases/deep-research",
+                href: "/use-cases/deep-research",
                 target: "_blank",
               },
               {
                 icon: <ArrowRight />,
                 label: "View more",
                 description: "Explore all use cases",
-                href: "https://docs.firecrawl.dev/use-cases/overview",
+                href: "/use-cases/overview",
                 target: "_blank",
               },
             ],
@@ -172,7 +170,7 @@ export const NAV_ITEMS = [
         sideItem={{
           icon: <ArrowRight />,
           label: "Customer stories",
-          description: "Browse Firecrawl success stories",
+          description: "Browse success stories",
           href: "/blog/category/customer-stories",
         }}
         sideLabel="Customer Stories"
@@ -185,7 +183,7 @@ export const NAV_ITEMS = [
   },
   {
     label: "Docs",
-    href: "https://docs.firecrawl.dev",
+    href: "/docs",
   },
   {
     label: "Pricing",
@@ -249,7 +247,7 @@ export const NAV_ITEMS = [
           icon: <ArrowRight />,
           label: "See Docs",
           description: "Read the docs.",
-          href: "https://docs.firecrawl.dev/features/extract",
+          href: "/docs/features/extract",
         }}
         sideLabel="/extract"
       />
@@ -268,14 +266,14 @@ export const NAV_ITEMS = [
               {
                 icon: <Changelog />,
                 label: "Changelog",
-                description: "Latest APl updates for Firecrawl",
+                description: "Latest APl updates",
                 href: "/changelog",
               },
               {
                 icon: <Api />,
                 label: "API Status",
                 description: "See maintenance, uptime and more",
-                href: "https://firecrawl.betteruptime.dev/",
+                href: "https://betteruptime.com/",
                 target: "_blank",
               },
               {
@@ -299,8 +297,8 @@ export const NAV_ITEMS = [
               {
                 icon: <MCPIcon />,
                 label: "MCP",
-                description: "Connect Firecrawl to agents",
-                href: "https://docs.firecrawl.dev/features/mcp",
+                description: "Connect to agents",
+                href: "/mcp",
               },
             ],
           },
@@ -310,7 +308,7 @@ export const NAV_ITEMS = [
           icon: <ArrowRight />,
           label: "See Github",
           description: "View the repository",
-          href: "https://github.com/firecrawl/firecrawl",
+          href: "https://github.com/example/example",
         }}
         sideLabel="Open Source"
       />
