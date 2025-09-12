@@ -55,6 +55,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const hoverTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
   const leaveTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
+  const handleSignOut = async () => {
+    const supabase = createSupabaseBrowserClient();
+    if (!supabase) {
+      console.error("Supabase client not available.");
+      return;
+    }
+    await supabase.auth.signOut();
+    onSignOut();
+  };
+
+  const handleGetFreeTokens = () => {
+    setIsPricingModalOpen(true);
+    onGetFreeTokens();
+  };
+
+  const handleSelectAccount = () => {
+    console.log("Select Account functionality to be implemented.");
+    onSelectAccount();
+  };
+
   const groupedChats = chatHistory.reduce((acc, chat) => {
     (acc[chat.date] = acc[chat.date] || []).push(chat);
     return acc;
@@ -68,6 +88,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const handleDeleteChat = async (chatId: string) => {
     const supabase = createSupabaseBrowserClient();
+    if (!supabase) {
+      console.error("Supabase client not available.");
+      return;
+    }
     await deleteProject(supabase, chatId);
     setChatHistory(chatHistory.filter(chat => chat.id !== chatId));
   };
@@ -159,7 +183,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   }, []);
 
   return (
-    <div className="flex h-screen">
+    <>
       {/* Always visible icons */}
       <div 
         className={`bg-background border-r border-border flex flex-col items-center py-4 transition-all duration-300 ease-in-out ${
@@ -209,7 +233,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <Button
             variant="ghost"
             size="icon"
-            onClick={onGetFreeTokens}
+            onClick={handleGetFreeTokens}
             className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-950 transition-colors"
             aria-label="Get free tokens"
           >
@@ -259,7 +283,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <Button
             variant="ghost"
             size="icon"
-            onClick={onSignOut}
+            onClick={handleSignOut}
             className="h-8 w-8 text-muted-foreground hover:text-foreground transition-colors"
             aria-label="Sign Out"
           >
@@ -270,7 +294,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Collapsible Sidebar Content */}
       <div 
-        className={`h-screen bg-background border-r border-border flex flex-col transition-all duration-300 ease-in-out ${
+        className={`bg-background border-r border-border flex flex-col transition-all duration-300 ease-in-out ${
           isOpen ? 'w-80 opacity-100 translate-x-0' : 'w-0 opacity-0 -translate-x-full overflow-hidden'
         }`}
         onMouseEnter={handleMouseEnter}
@@ -362,7 +386,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="p-4 space-y-1">
           <Button
             variant="ghost"
-            onClick={onGetFreeTokens}
+            onClick={handleGetFreeTokens}
             className="w-full justify-start gap-3 text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-950 transition-colors"
           >
             <Gift className="h-4 w-4" />
@@ -401,7 +425,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
           <Button
             variant="ghost"
-            onClick={onSelectAccount}
+            onClick={handleSelectAccount}
             className="w-full justify-start gap-3 text-muted-foreground hover:text-foreground transition-colors"
           >
             <User className="h-4 w-4" />
@@ -410,7 +434,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
           <Button
             variant="ghost"
-            onClick={onSignOut}
+            onClick={handleSignOut}
             className="w-full justify-start gap-3 text-muted-foreground hover:text-foreground transition-colors"
           >
             <LogOut className="h-4 w-4" />
@@ -439,6 +463,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </div>
       <PricingModal isOpen={isPricingModalOpen} onClose={() => setIsPricingModalOpen(false)} />
-    </div>
+    </>
   );
 };

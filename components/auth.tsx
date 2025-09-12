@@ -32,6 +32,7 @@ export interface AuthProps {
   socialLayout?: 'horizontal' | 'vertical'
   providers?: Provider[]
   view?: ViewType
+  setView?: (view: ViewType) => void // Add setView prop
   redirectTo?: RedirectTo
   onlyThirdPartyProviders?: boolean
   magicLink?: boolean
@@ -586,6 +587,7 @@ function Auth({
   socialLayout = 'vertical',
   providers,
   view = VIEWS.SIGN_IN,
+  setView, // Destructure setView
   redirectTo,
   onlyThirdPartyProviders = false,
   magicLink = false,

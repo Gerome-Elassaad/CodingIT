@@ -9,14 +9,16 @@ export default function Logo(
 ) {
   const { theme } = useTheme()
   const src = theme === 'light' ? '/logo-dark.png' : '/logo.png'
-  const { width, style } = props
+  const { width = 32, height = 32, style, ...rest } = props
 
   return (
     <Image
       src={src}
       alt="Logo"
-      {...props}
-      style={{ ...style, width, height: 'auto' }}
+      width={width}
+      height={height}
+      style={style}
+      {...rest}
     />
   )
 }

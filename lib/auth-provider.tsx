@@ -4,6 +4,7 @@ import { createContext, useContext, useState } from 'react'
 import { useAuth } from './auth'
 import { Session } from '@supabase/supabase-js'
 import { UserTeamProvider } from './user-team-provider'
+import { ViewType } from '@/components/auth'
 
 type AuthContextType = {
   session: Session | null
@@ -12,9 +13,7 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [authView, setAuthView] = useState<any>('sign_in')
-  const [authDialog, setAuthDialog] = useState(false)
+export function AuthProvider({ children, setAuthDialog, setAuthView }: { children: React.ReactNode, setAuthDialog: (isOpen: boolean) => void, setAuthView: (view: ViewType) => void }) {
   const { session, loading } = useAuth(setAuthDialog, setAuthView)
 
   return (

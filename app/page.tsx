@@ -1,524 +1,773 @@
-'use client'
+"use client";
 
-import { ViewType } from '@/components/auth';
-import { AuthDialog } from '@/components/auth-dialog';
-import { Chat } from '@/components/chat';
-import { PromptInputBox } from '@/components/ui/ai-prompt-box';
-import { ChatPicker } from '@/components/chat-picker';
-import { ChatSettings } from '@/components/chat-settings';
-import { NavBar } from '@/components/navbar';
-import { Preview } from '@/components/preview';
-import { Sidebar } from '@/components/sidebar';
-import { useAuth } from '@/lib/auth';
-import { Project, createProject, saveMessage, getProjectMessages, generateProjectTitle, getProject } from '@/lib/database';
-import { Message, toAISDKMessages, toMessageImage } from '@/lib/messages';
-import { LLMModelConfig } from '@/lib/models';
-import modelsList from '@/lib/models.json';
-import { FragmentSchema, fragmentSchema as schema } from '@/lib/schema';
-import { createSupabaseBrowserClient } from '@/lib/supabase-browser';
-import templates, { TemplateId } from '@/lib/templates';
-import { ExecutionResult } from '@/lib/types';
-import { cn } from '@/lib/utils';
-import { DeepPartial } from 'ai';
-import { experimental_useObject as useObject } from '@ai-sdk/react';
-import { usePostHog } from 'posthog-js/react';
-import { SetStateAction, useCallback, useEffect, useState } from 'react';
-import { useLocalStorage } from 'usehooks-ts';
-import { useUserTeam } from '@/lib/user-team-provider';
-import { HeroPillSecond } from '@/components/announcement';
-import { useAnalytics } from '@/lib/analytics-service';
-import { SupabaseClient } from '@supabase/supabase-js';
+import Link from "next/link";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { appConfig } from '@/config/app.config';
+import { toast } from "sonner";
 
-export default function Home() {
-  const supabase = createSupabaseBrowserClient()
-  const [selectedTemplate, setSelectedTemplate] = useState<'auto' | TemplateId>('auto')
-  const [languageModel, setLanguageModel] = useLocalStorage<LLMModelConfig>(
-    'languageModel',
-    {
-      model: 'claude-3-5-sonnet-latest',
-    },
-  )
+// Import shared components
+import { Connector } from "@/components/shared/layout/curvy-rect";
+import HeroFlame from "@/components/shared/effects/flame/hero-flame";
+import AsciiExplosion from "@/components/shared/effects/flame/ascii-explosion";
 
-  const posthog = usePostHog()
-  const analytics = useAnalytics()
+// Import hero section components
+import HomeHeroBackground from "@/components/app/(home)/sections/hero/Background/Background";
+import { BackgroundOuterPiece } from "@/components/app/(home)/sections/hero/Background/BackgroundOuterPiece";
+import HomeHeroBadge from "@/components/app/(home)/sections/hero/Badge/Badge";
+import HomeHeroPixi from "@/components/app/(home)/sections/hero/Pixi/Pixi";
+import HomeHeroTitle from "@/components/app/(home)/sections/hero/Title/Title";
+import HeroInputSubmitButton from "@/components/app/(home)/sections/hero-input/Button/Button";
+// import Globe from "@/components/app/(home)/sections/hero-input/_svg/Globe";
 
-  const [result, setResult] = useState<ExecutionResult>()
-  const [sessionStartTime] = useState(Date.now())
-  const [fragmentsGenerated, setFragmentsGenerated] = useState(0)
-  const [messagesCount, setMessagesCount] = useState(0)
-  const [errorsEncountered, setErrorsEncountered] = useState(0)
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [fragment, setFragment] = useState<DeepPartial<FragmentSchema>>();
-  const [currentTab, setCurrentTab] = useState<'code' | 'fragment' | 'terminal' | 'interpreter' | 'editor'>('code');
-  const [selectedFile] = useState<{ path: string; content: string } | null>(null);
-  const [isPreviewLoading, setIsPreviewLoading] = useState(false);
-  const [isAuthDialogOpen, setAuthDialog] = useState(false);
-  const [authView, setAuthView] = useState<ViewType>('sign_in')
-  const [isRateLimited, setIsRateLimited] = useState(false)
-  const setAuthDialogCallback = useCallback((isOpen: boolean) => {
-    setAuthDialog(isOpen)
-  }, [setAuthDialog])
+// Import header components
+import HeaderBrandKit from "@/components/shared/header/BrandKit/BrandKit";
+import HeaderWrapper from "@/components/shared/header/Wrapper/Wrapper";
+import HeaderDropdownWrapper from "@/components/shared/header/Dropdown/Wrapper/Wrapper";
+import GithubIcon from "@/components/shared/header/Github/_svg/GithubIcon";
+import ButtonUI from "@/components/ui/shadcn/button"
 
-  const setAuthViewCallback = useCallback((view: ViewType) => {
-    setAuthView(view)
-  }, [setAuthView])
-  const [errorMessage, setErrorMessage] = useState('')
+interface SearchResult {
+  url: string;
+  title: string;
+  description: string;
+  screenshot: string | null;
+  markdown: string;
+}
+
+export default function HomePage() {
+  const [url, setUrl] = useState<string>("");
+  const [selectedStyle, setSelectedStyle] = useState<string>("1");
+  const [selectedModel, setSelectedModel] = useState<string>(appConfig.ai.defaultModel);
+  const [isValidUrl, setIsValidUrl] = useState<boolean>(false);
+  const [showSearchTiles, setShowSearchTiles] = useState<boolean>(false);
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [isSearching, setIsSearching] = useState<boolean>(false);
+  const [hasSearched, setHasSearched] = useState<boolean>(false);
+  const [isFadingOut, setIsFadingOut] = useState<boolean>(false);
+  const [showSelectMessage, setShowSelectMessage] = useState<boolean>(false);
+  const [showInstructionsForIndex, setShowInstructionsForIndex] = useState<number | null>(null);
+  const [additionalInstructions, setAdditionalInstructions] = useState<string>('');
+  const router = useRouter();
   
-  const [currentProject, setCurrentProject] = useState<Project | null>(null)
-  const [isLoadingProject, setIsLoadingProject] = useState(false)
+  // Simple URL validation
+  const validateUrl = (urlString: string) => {
+    if (!urlString) return false;
+    // Basic URL pattern - accepts domains with or without protocol
+    const urlPattern = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
+    return urlPattern.test(urlString.toLowerCase());
+  };
 
-  const { session } = useAuth(setAuthDialogCallback, setAuthViewCallback)
-  const { userTeam } = useUserTeam()
+  // Check if input is a URL (contains a dot)
+  const isURL = (str: string): boolean => {
+    const urlPattern = /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/.*)?$/;
+    return urlPattern.test(str.trim());
+  };
 
+  const styles = [
+    { id: "1", name: "Glassmorphism", description: "Frosted glass effect" },
+    { id: "2", name: "Neumorphism", description: "Soft 3D shadows" },
+    { id: "3", name: "Brutalism", description: "Bold and raw" },
+    { id: "4", name: "Minimalist", description: "Clean and simple" },
+    { id: "5", name: "Dark Mode", description: "Dark theme design" },
+    { id: "6", name: "Gradient Rich", description: "Vibrant gradients" },
+    { id: "7", name: "3D Depth", description: "Dimensional layers" },
+    { id: "8", name: "Retro Wave", description: "80s inspired" },
+  ];
 
-  const handleChatSelected = async (chatId: string) => {
-    const project = await getProject(supabase, chatId);
-    if (project) {
-      setCurrentProject(project);
+  const models = appConfig.ai.availableModels.map(model => ({
+    id: model,
+    name: appConfig.ai.modelDisplayNames[model] || model,
+  }));
+
+  const handleSubmit = async (selectedResult?: SearchResult) => {
+    const inputValue = url.trim();
+    
+    if (!inputValue) {
+      toast.error("Please enter a URL or search term");
+      return;
+    }
+    
+    // If it's a search result being selected, fade out and redirect
+    if (selectedResult) {
+      setIsFadingOut(true);
+      
+      // Wait for fade animation
+      setTimeout(() => {
+        sessionStorage.setItem('targetUrl', selectedResult.url);
+        sessionStorage.setItem('selectedStyle', selectedStyle);
+        sessionStorage.setItem('selectedModel', selectedModel);
+        sessionStorage.setItem('autoStart', 'true');
+        if (selectedResult.markdown) {
+          sessionStorage.setItem('siteMarkdown', selectedResult.markdown);
+        }
+        router.push('/generation');
+      }, 500);
+      return;
+    }
+    
+    // If it's a URL, go straight to generation
+    if (isURL(inputValue)) {
+      sessionStorage.setItem('targetUrl', inputValue);
+      sessionStorage.setItem('selectedStyle', selectedStyle);
+      sessionStorage.setItem('selectedModel', selectedModel);
+      sessionStorage.setItem('autoStart', 'true');
+      router.push('/generation');
+    } else {
+      // It's a search term, fade out if results exist, then search
+      if (hasSearched && searchResults.length > 0) {
+        setIsFadingOut(true);
+        
+        setTimeout(async () => {
+          setSearchResults([]);
+          setIsFadingOut(false);
+          setShowSelectMessage(true);
+          
+          // Perform new search
+          await performSearch(inputValue);
+          setHasSearched(true);
+          setShowSearchTiles(true);
+          setShowSelectMessage(false);
+          
+          // Smooth scroll to carousel
+          setTimeout(() => {
+            const carouselSection = document.querySelector('.carousel-section');
+            if (carouselSection) {
+              carouselSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }, 300);
+        }, 500);
+      } else {
+        // First search, no fade needed
+        setShowSelectMessage(true);
+        setIsSearching(true);
+        setHasSearched(true);
+        setShowSearchTiles(true);
+        
+        // Scroll to carousel area immediately
+        setTimeout(() => {
+          const carouselSection = document.querySelector('.carousel-section');
+          if (carouselSection) {
+            carouselSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 100);
+        
+        await performSearch(inputValue);
+        setShowSelectMessage(false);
+        setIsSearching(false);
+        
+        // Smooth scroll to carousel
+        setTimeout(() => {
+          const carouselSection = document.querySelector('.carousel-section');
+          if (carouselSection) {
+            carouselSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 300);
+      }
     }
   };
 
-  const filteredModels = modelsList.models.filter((model) => {
-    if (process.env.NEXT_PUBLIC_HIDE_LOCAL_MODELS) {
-      return model.providerId !== 'ollama'
+  // Perform search when user types
+  const performSearch = async (searchQuery: string) => {
+    if (!searchQuery.trim() || isURL(searchQuery)) {
+      setSearchResults([]);
+      setShowSearchTiles(false);
+      return;
     }
-    return true
-  })
 
-  const currentModel = filteredModels.find(
-    (model) => model.id === languageModel.model,
-  );
+    setIsSearching(true);
+    setShowSearchTiles(true);
+    try {
+      const response = await fetch('/api/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: searchQuery }),
+      });
 
-
-  const { object, submit, isLoading, stop, error } = useObject({
-    api: '/api/chat',
-    schema,
-    onError: (error: Error) => {
-      setErrorsEncountered(prev => prev + 1)
-      console.error('Error submitting request:', error);
-      
-      let displayMessage = error.message;
-      let isRateLimit = false
-      
-      // Try to parse structured error response
-      try {
-        if (error.message.startsWith('{')) {
-          const errorData = JSON.parse(error.message)
-          displayMessage = errorData.error || error.message
-          isRateLimit = errorData.type === 'rate_limit'
-        } else {
-          // Handle common error patterns
-          if (error.message.includes('limit') || error.message.includes('rate')) {
-            isRateLimit = true
-            displayMessage = 'Rate limit exceeded. Please try again later or use your own API key.'
-          } else if (error.message.includes('API key') || error.message.includes('unauthorized')) {
-            displayMessage = 'Invalid API key. Please check your API key configuration in settings.'
-          } else if (error.message.includes('network') || error.message.includes('fetch')) {
-            displayMessage = 'Network error. Please check your connection and try again.'
-          } else if (error.message.includes('timeout')) {
-            displayMessage = 'Request timeout. Please try again.'
-          }
-        }
-      } catch {
-        // Use original error message if parsing fails
+      if (response.ok) {
+        const data = await response.json();
+        setSearchResults(data.results || []);
+        setShowSearchTiles(true);
       }
-      
-      setIsRateLimited(isRateLimit);
-      setErrorMessage(displayMessage);
-    },
-    onFinish: async ({ object: fragment, error }: { object: DeepPartial<FragmentSchema> | undefined, error: any }) => {
-      if (!error && fragment) {
-        setIsPreviewLoading(true);
-        // Enhanced analytics tracking
-        const generationTime = Date.now() - Date.now() // Would track actual generation time
-        if (fragment.code && fragment.template) {
-          analytics.trackFragmentGenerated(fragment as FragmentSchema, generationTime, 1)
-        }
-        setFragmentsGenerated(prev => prev + 1)
-        
-        
-        posthog.capture('fragment_generated', {
-          template: fragment?.template,
-        })
-
-        const response = await fetch('/api/sandbox', {
-          method: 'POST',
-          body: JSON.stringify({
-            fragment,
-            userID: session?.user?.id,
-            teamID: userTeam?.id,
-            accessToken: session?.access_token,
-          }),
-        })
-
-        const result = await response.json()
-        
-        if (!response.ok) {
-          console.error('Sandbox creation failed:', result)
-          setErrorMessage(result.error || 'Failed to create sandbox environment')
-          setIsPreviewLoading(false)
-          return
-        }
-
-        // Enhanced sandbox tracking
-        const creationTime = Date.now() - Date.now() // Would track actual creation time
-        analytics.trackSandboxCreation(fragment?.template || 'unknown', creationTime, response.ok)
-        
-        posthog.capture('sandbox_created', { url: result.url })
-
-        setResult(result)
-        setCurrentPreview({ fragment, result })
-        setMessage({ result })
-        setCurrentTab('fragment')
-        setIsPreviewLoading(false)
-      }
-    },
-  })
-
-  useEffect(() => {
-    async function loadProjectMessages() {
-      if (!currentProject) {
-        setMessages([])
-        return
-      }
-
-      setIsLoadingProject(true)
-      const projectMessages = await getProjectMessages(supabase, currentProject.id)
-      setMessages(projectMessages)
-      setIsLoadingProject(false)
+    } catch (error) {
+      console.error('Search error:', error);
+    } finally {
+      setIsSearching(false);
     }
-
-    loadProjectMessages()
-  }, [currentProject, supabase])
-
-  useEffect(() => {
-    async function saveMessagesToDb() {
-      if (!currentProject || !session || messages.length === 0) return
-
-      const lastMessage = messages[messages.length - 1]
-      const sequenceNumber = messages.length - 1
-
-      await saveMessage(supabase, currentProject.id, lastMessage, sequenceNumber)
-    }
-
-    if (messages.length > 0 && currentProject && session) {
-      saveMessagesToDb()
-    }
-  }, [messages, currentProject, session, supabase])
-
-  useEffect(() => {
-    if (object) {
-      setFragment(object)
-      const content: Message['content'] = [
-        { type: 'text', text: object.commentary || '' },
-        { type: 'code', text: object.code || '' },
-      ]
-      setMessages(prev => {
-        const lastMessage = prev[prev.length - 1]
-        if (!lastMessage || lastMessage.role !== 'assistant') {
-          return [
-            ...prev,
-            {
-              role: 'assistant',
-              content,
-              object,
-            },
-          ]
-        } else {
-          const newMessages = [...prev]
-          newMessages[prev.length - 1] = {
-            ...lastMessage,
-            content,
-            object,
-          }
-          return newMessages
-        }
-      })
-    }
-  }, [object])
-
-  useEffect(() => {
-    if (error) stop()
-  }, [error, stop])
-
-  // Track session end when component unmounts
-  useEffect(() => {
-    return () => {
-      if (session?.user?.id) {
-        const sessionDuration = Date.now() - sessionStartTime
-        analytics.trackSessionEnd(
-          sessionDuration,
-          fragmentsGenerated,
-          messagesCount,
-          errorsEncountered
-        )
-      }
-    }
-  }, [session?.user?.id, sessionStartTime, fragmentsGenerated, messagesCount, errorsEncountered, analytics])
-
-  function setMessage(message: Partial<Message>, index?: number) {
-    setMessages((previousMessages) => {
-      const updatedMessages = [...previousMessages]
-      updatedMessages[index ?? previousMessages.length - 1] = {
-        ...previousMessages[index ?? previousMessages.length - 1],
-        ...message,
-      }
-      return updatedMessages
-    })
-  }
-
-  async function handleSendPrompt(message: string, files: File[] = []) {
-    if (!session) {
-      return setAuthDialog(true)
-    }
-
-    if (isLoading) {
-      stop()
-    }
-
-    const currentInput = message
-    const currentFiles = files
-    setCurrentTab('code')
-
-    const content: Message['content'] = [{ type: 'text', text: currentInput }]
-    
-    const images = await toMessageImage(currentFiles)
-    if (images.length > 0) {
-      images.forEach((image) => {
-        content.push({ type: 'image', image })
-      })
-    }
-
-    const newMessage: Message = {
-      role: 'user',
-      content,
-    }
-    const updatedMessages = [...messages, newMessage]
-    setMessages(updatedMessages)
-
-    const templateToSend =
-      selectedTemplate === 'auto'
-        ? templates
-        : { [selectedTemplate]: templates[selectedTemplate] }
-
-    submit({
-      userID: session?.user?.id,
-      teamID: userTeam?.id,
-      messages: toAISDKMessages(updatedMessages),
-      template: templateToSend,
-      model: currentModel,
-      config: languageModel,
-    })
-
-    if (!currentProject) {
-      try {
-        const title = await generateProjectTitle(currentInput)
-        if (supabase) {
-          const newProject = await createProject(supabase, title, selectedTemplate === 'auto' ? undefined : selectedTemplate)
-          if (newProject) {
-            setCurrentProject(newProject)
-          }
-        }
-      } catch (error) {
-        console.error('Error creating project:', error)
-      }
-    }
-
-    // Enhanced chat analytics
-    setMessagesCount(prev => prev + 1)
-    
-    const promptLength = currentInput.length
-    const hasImages = currentFiles.length > 0
-    
-    analytics.trackPromptSubmission(
-      currentInput,
-      languageModel.model || 'unknown',
-      promptLength,
-      hasImages,
-      messages.length > 0 ? 'conversation' : 'none'
-    )
-    
-    // Track template selection
-    if (selectedTemplate !== 'auto') {
-      analytics.trackTemplateSelected(selectedTemplate, 'manual')
-    }
-    
-    // Revenue tracking handled by analytics service
-    
-    posthog.capture('chat_submit', {
-      template: selectedTemplate,
-      model: languageModel.model,
-    })
-  }
-
-  function retry() {
-    submit({
-      userID: session?.user?.id,
-      teamID: userTeam?.id,
-      messages: toAISDKMessages(messages),
-      template: templates,
-      model: currentModel,
-      config: languageModel,
-    })
-  }
-
-
-  function logout() {
-    if (supabase) {
-      supabase.auth.signOut()
-    } else {
-      console.warn('Supabase is not initialized')
-    }
-  }
-
-  function handleLanguageModelChange(e: LLMModelConfig) {
-    const previousModel = languageModel.model
-    const newModel = e.model
-    
-    if (previousModel && newModel && previousModel !== newModel) {
-      // Track model switching
-      analytics.trackModelSwitch(previousModel, newModel, 'experiment')
-      
-      // Revenue tracking handled by analytics service
-    }
-    
-    setLanguageModel({ ...languageModel, ...e })
-  }
-
-  function handleSocialClick(target: 'github' | 'x' | 'discord') {
-    if (target === 'github') {
-      window.open('https://github.com/Gerome-Elassaad/CodingIT', '_blank')
-    } else if (target === 'x') {
-      window.open('https://x.com/codinit_dev', '_blank')
-    }
-
-    // Enhanced social tracking
-    analytics.trackFeatureUsed(`social_${target}`, { target })
-    
-    posthog.capture(`${target}_click`)
-  }
-
-  function handleClearChat() {
-    stop()
-    setMessages([])
-    setFragment(undefined)
-    setResult(undefined)
-    setCurrentTab('code')
-    setIsPreviewLoading(false)
-    setCurrentProject(null)
-  }
-
-  function setCurrentPreview(preview: {
-    fragment: DeepPartial<FragmentSchema> | undefined
-    result: ExecutionResult | undefined
-  }) {
-    setFragment(preview.fragment)
-    setResult(preview.result)
-  }
-
-  function handleUndo() {
-    setMessages((previousMessages) => [...previousMessages.slice(0, -2)])
-    setCurrentPreview({ fragment: undefined, result: undefined })
-  }
+  };
 
   return (
-    <main className="flex min-h-screen max-h-screen">
-      {supabase && (
-        <AuthDialog
-          open={isAuthDialogOpen}
-          setOpen={setAuthDialog}
-          view={authView}
-          supabase={supabase as unknown as SupabaseClient<any, "public", "public">}
-        />
-      )}
+    <><div className="min-h-screen bg-background-base">
+      {/* Header/Navigation Section */}
+      <HeaderDropdownWrapper />
 
-      {session && (
-        <Sidebar
-          userPlan={userTeam?.tier}
-          onChatSelected={handleChatSelected}
-        />
-      )}
+      <div className="sticky top-0 left-0 w-full z-[101] bg-background-base header">
+        <div className="absolute top-0 cmw-container border-x border-border-faint h-full pointer-events-none" />
+        <div className="h-1 bg-border-faint w-full left-0 -bottom-1 absolute" />
+        <div className="cmw-container absolute h-full pointer-events-none top-0">
+          <Connector className="absolute -left-[10.5px] -bottom-11" />
+          <Connector className="absolute -right-[10.5px] -bottom-11" />
+        </div>
 
-      <div className={cn(
-        "grid w-full md:grid-cols-2 transition-all duration-300",
-        session ? "ml-16" : ""
-      )}>
-        <div
-          className={`flex flex-col w-full h-screen max-w-[800px] mx-auto px-4 ${fragment ? 'col-span-1' : 'col-span-2'}`}
-        >
-          <NavBar
-            session={session}
-            showLogin={() => setAuthDialog(true)}
-            signOut={logout}
-            onSocialClick={handleSocialClick}
-            onClear={handleClearChat}
-            canClear={messages.length > 0}
-            canUndo={messages.length > 1 && !isLoading}
-            onUndo={handleUndo}
-          />
-          
-          <div className="flex justify-center mb-4">
-            <HeroPillSecond />
+        <HeaderWrapper>
+          <div className="max-w-[900px] mx-auto w-full flex justify-between items-center">
+            <div className="flex gap-24 items-center">
+              <HeaderBrandKit />
+            </div>
+            <div className="flex gap-8">
+              <a
+                className="contents"
+                href="https://github.com/mendableai/open-lovable"
+                target="_blank"
+              >
+                <ButtonUI variant="tertiary">
+                  <GithubIcon />
+                  Use this Template
+                </ButtonUI>
+              </a>
+            </div>
           </div>
+        </HeaderWrapper>
+      </div>
 
-          <div className="flex-grow overflow-y-auto">
-            {isLoadingProject ? (
-              <div className="flex items-center justify-center h-32">
-                <div className="text-muted-foreground">Loading project...</div>
-              </div>
-            ) : (
-              <Chat
-                messages={messages}
-                isLoading={isLoading}
-                setCurrentPreview={setCurrentPreview}
-              />
-            )}
-          </div>
-          
-          <div className="space-y-4 mt-4">
-            {error && (
-              <div className="flex items-center justify-between p-2 bg-red-500/10 border border-red-500/20 rounded-lg text-red-500 text-sm">
-                <span>{errorMessage}</span>
-                <button onClick={retry} className="ml-4 p-1 rounded-md hover:bg-red-500/20">Retry</button>
-              </div>
-            )}
-            {isLoading && (
-              <div className="flex items-center justify-between p-2">
-                <span className="text-muted-foreground">Generating response...</span>
-                <button onClick={stop} className="ml-4 p-1 rounded-md border">Stop</button>
-              </div>
-            )}
-              <PromptInputBox
-                onSend={handleSendPrompt}
-                templates={templates}
-                selectedTemplate={selectedTemplate}
-                onSelectedTemplateChange={setSelectedTemplate}
-                models={filteredModels}
-                languageModel={languageModel}
-                onLanguageModelChange={handleLanguageModelChange}
-                apiKeyConfigurable={!process.env.NEXT_PUBLIC_NO_API_KEY_INPUT}
-                baseURLConfigurable={!process.env.NEXT_PUBLIC_NO_BASE_URL_INPUT}
-              />
+      {/* Hero Section */}
+      <section className="overflow-x-clip" id="home-hero">
+        <div className="pt-28 lg:pt-254 lg:-mt-100 pb-115 relative" id="hero-content">
+          <HomeHeroPixi />
+          <HeroFlame />
+          <BackgroundOuterPiece />
+          <HomeHeroBackground />
+
+          <div className="relative container px-16">
+            <HomeHeroBadge />
+            <HomeHeroTitle />
+            <p className="text-center text-body-large">
+              Re-imagine any website, in seconds.
+            </p>
+            <img
+              src="/logo.png"
+              alt="Logo"
+              className="block mt-8 mx-auto w-auto h-30 lg:h-24" />
           </div>
         </div>
-          <Preview
-          teamID={userTeam?.id}
-          accessToken={session?.access_token}
-          selectedTab={currentTab}
-          onSelectedTabChange={setCurrentTab}
-          isChatLoading={isLoading}
-          isPreviewLoading={isPreviewLoading}
-          fragment={fragment}
-          result={result as ExecutionResult}
-          onClose={() => setFragment(undefined)}
-          code={fragment?.code || ''}
-          selectedFile={selectedFile} onSave={function (): void {
-            throw new Error('Function not implemented.');
-          } } executeCode={function (): Promise<void> {
-            throw new Error('Function not implemented.');
-          } }        
-          />
-      </div>
-    </main>
-  )
+
+        {/* Mini Playground Input */}
+        <div className="container lg:contents !p-16 relative -mt-90">
+          <div className="absolute top-0 left-[calc(50%-50vw)] w-screen h-1 bg-border-faint lg:hidden" />
+          <div className="absolute bottom-0 left-[calc(50%-50vw)] w-screen h-1 bg-border-faint lg:hidden" />
+          <Connector className="-top-10 -left-[10.5px] lg:hidden" />
+          <Connector className="-top-10 -right-[10.5px] lg:hidden" />
+          <Connector className="-bottom-10 -left-[10.5px] lg:hidden" />
+          <Connector className="-bottom-10 -right-[10.5px] lg:hidden" />
+
+          {/* Hero Input Component */}
+          <div className="max-w-552 mx-auto z-[11] lg:z-[2]">
+            <div className="rounded-20 -mt-30 lg:-mt-30">
+              <div
+                className="bg-white rounded-20"
+                style={{
+                  boxShadow: "0px 0px 44px 0px rgba(0, 0, 0, 0.02), 0px 88px 56px -20px rgba(0, 0, 0, 0.03), 0px 56px 56px -20px rgba(0, 0, 0, 0.02), 0px 32px 32px -20px rgba(0, 0, 0, 0.03), 0px 16px 24px -12px rgba(0, 0, 0, 0.03), 0px 0px 0px 1px rgba(0, 0, 0, 0.05), 0px 0px 0px 10px #F9F9F9",
+                }}
+              >
+
+                <div className="p-16 flex gap-12 items-center w-full relative bg-white rounded-20">
+                  {/* Show different UI when search results are displayed */}
+                  {hasSearched && searchResults.length > 0 && !isFadingOut ? (
+                    <>
+                      {/* Selection mode icon */}
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 20 20"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="opacity-40 flex-shrink-0"
+                      >
+                        <rect x="2" y="4" width="7" height="5" rx="1" stroke="currentColor" strokeWidth="1.5" />
+                        <rect x="11" y="4" width="7" height="5" rx="1" stroke="currentColor" strokeWidth="1.5" />
+                        <rect x="2" y="11" width="7" height="5" rx="1" stroke="currentColor" strokeWidth="1.5" />
+                        <rect x="11" y="11" width="7" height="5" rx="1" stroke="currentColor" strokeWidth="1.5" />
+                      </svg>
+
+                      {/* Selection message */}
+                      <div className="flex-1 text-body-input text-accent-black">
+                        Select which site to clone from the results below
+                      </div>
+
+                      {/* Search again button */}
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setIsFadingOut(true);
+                          setTimeout(() => {
+                            setSearchResults([]);
+                            setHasSearched(false);
+                            setShowSearchTiles(false);
+                            setIsFadingOut(false);
+                            setUrl('');
+                          }, 500);
+                        } }
+                        className="button relative rounded-10 px-12 py-8 text-label-medium font-medium flex items-center justify-center gap-6 bg-gray-100 hover:bg-gray-200 text-gray-700 active:scale-[0.995] transition-all"
+                      >
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 16 16"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="opacity-60"
+                        >
+                          <path d="M14 14L10 10M11 6.5C11 9 9 11 6.5 11C4 11 2 9 2 6.5C2 4 4 2 6.5 2C9 2 11 4 11 6.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                        </svg>
+                        <span>Search Again</span>
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      {isURL(url) ? (
+                        // Scrape icon for URLs
+                        <svg
+                          width="20"
+                          height="20"
+                          viewBox="0 0 20 20"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="opacity-40 flex-shrink-0"
+                        >
+                          <rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" strokeWidth="1.5" />
+                          <path d="M7 10L9 12L13 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      ) : (
+                        // Search icon for search terms
+                        <svg
+                          width="20"
+                          height="20"
+                          viewBox="0 0 20 20"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="opacity-40 flex-shrink-0"
+                        >
+                          <circle cx="8.5" cy="8.5" r="5.5" stroke="currentColor" strokeWidth="1.5" />
+                          <path d="M12.5 12.5L16.5 16.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                        </svg>
+                      )}
+                      <input
+                        className="flex-1 bg-transparent text-body-input text-accent-black placeholder:text-black-alpha-48 focus:outline-none focus:ring-0 focus:border-transparent"
+                        placeholder="Enter URL or search term..."
+                        type="text"
+                        value={url}
+                        disabled={isSearching}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setUrl(value);
+                          setIsValidUrl(validateUrl(value));
+                          // Reset search state when input changes
+                          if (value.trim() === "") {
+                            setShowSearchTiles(false);
+                            setHasSearched(false);
+                            setSearchResults([]);
+                          }
+                        } }
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !isSearching) {
+                            e.preventDefault();
+                            handleSubmit();
+                          }
+                        } }
+                        onFocus={() => {
+                          if (url.trim() && !isURL(url) && searchResults.length > 0) {
+                            setShowSearchTiles(true);
+                          }
+                        } } />
+                      <div
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (!isSearching) {
+                            handleSubmit();
+                          }
+                        } }
+                        className={isSearching ? 'pointer-events-none' : ''}
+                      >
+                        <HeroInputSubmitButton
+                          dirty={url.length > 0}
+                          buttonText={isURL(url) ? 'Scrape Site' : 'Search'}
+                          disabled={isSearching} />
+                      </div>
+                    </>
+                  )}
+                </div>
+
+
+                {/* Options Section - Only show when valid URL */}
+                <div className={`overflow-hidden transition-all duration-500 ease-in-out ${isValidUrl ? 'max-h-[200px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                  <div className="p-[28px]">
+                    <div className="border-t border-gray-100 bg-white">
+                      {/* Style Selector */}
+                      <div className={`mb-2 pt-4 transition-all duration-300 transform ${isValidUrl ? 'translate-y-0 opacity-100' : '-translate-y-2 opacity-0'}`} style={{ transitionDelay: '100ms' }}>
+                        <div className="grid grid-cols-4 gap-1">
+                          {styles.map((style, index) => (
+                            <button
+                              key={style.id}
+                              onClick={() => setSelectedStyle(style.id)}
+                              className={`
+                                py-2.5 px-2 rounded text-[10px] font-medium border transition-all text-center
+                                ${selectedStyle === style.id
+                                  ? 'border-orange-500 bg-orange-50 text-orange-900'
+                                  : 'border-gray-200 hover:border-gray-300 bg-white text-gray-700'}
+                                ${isValidUrl ? 'opacity-100' : 'opacity-0'}
+                              `}
+                              style={{
+                                transitionDelay: `${150 + index * 30}ms`,
+                                transition: 'all 0.3s ease-in-out'
+                              }}
+                            >
+                              {style.name}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Model Selector Dropdown and Additional Instructions */}
+                      <div className={`flex gap-3 mt-2 pb-4 transition-all duration-300 transform ${isValidUrl ? 'translate-y-0 opacity-100' : '-translate-y-2 opacity-0'}`} style={{ transitionDelay: '400ms' }}>
+                        {/* Model Dropdown */}
+                        <select
+                          value={selectedModel}
+                          onChange={(e) => setSelectedModel(e.target.value)}
+                          className="px-3 py-2.5 text-[10px] font-medium text-gray-700 bg-white rounded border border-gray-200 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                        >
+                          {models.map((model) => (
+                            <option key={model.id} value={model.id}>
+                              {model.name}
+                            </option>
+                          ))}
+                        </select>
+
+                        {/* Additional Instructions */}
+                        <input
+                          type="text"
+                          className="flex-1 px-3 py-2.5 text-[10px] text-gray-700 bg-gray-50 rounded border border-gray-200 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 placeholder:text-gray-400"
+                          placeholder="Additional instructions (optional)"
+                          onChange={(e) => sessionStorage.setItem('additionalInstructions', e.target.value)} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              <div className="h-248 top-84 cw-768 pointer-events-none absolute overflow-clip -z-10">
+                <AsciiExplosion className="-top-200" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Full-width oval carousel section */}
+      {showSearchTiles && hasSearched && (
+        <section className={`carousel-section relative w-full overflow-hidden mt-32 mb-32 transition-opacity duration-500 ${isFadingOut ? 'opacity-0' : 'opacity-100'}`}>
+          <div className="absolute inset-0 bg-gradient-to-b from-gray-50/50 to-white rounded-[50%] transform scale-x-150 -translate-y-24" />
+
+          {isSearching ? (
+            // Loading state with animated scrolling skeletons
+            <div className="relative h-[250px] overflow-hidden">
+              {/* Edge fade overlays */}
+              <div className="absolute left-0 top-0 bottom-0 w-[120px] z-20 pointer-events-none" style={{ background: 'linear-gradient(to right, white 0%, white 20%, transparent 100%)' }} />
+              <div className="absolute right-0 top-0 bottom-0 w-[120px] z-20 pointer-events-none" style={{ background: 'linear-gradient(to left, white 0%, white 20%, transparent 100%)' }} />
+
+              <div className="carousel-container absolute left-0 flex gap-12 py-4">
+                {/* Duplicate skeleton tiles for continuous scroll */}
+                {[...Array(10), ...Array(10)].map((_, index) => (
+                  <div
+                    key={`loading-${index}`}
+                    className="flex-shrink-0 w-[400px] h-[240px] rounded-lg overflow-hidden border-2 border-gray-200/30 bg-white relative"
+                  >
+                    <div className="absolute inset-0 skeleton-shimmer">
+                      <div className="absolute inset-0 bg-gradient-to-r from-gray-100 via-gray-50 to-gray-100 skeleton-gradient" />
+                    </div>
+
+                    {/* Fake browser UI - 5x bigger */}
+                    <div className="absolute top-0 left-0 right-0 h-40 bg-gray-100 border-b border-gray-200/50 flex items-center px-6 gap-4">
+                      <div className="flex gap-3">
+                        <div className="w-5 h-5 rounded-full bg-gray-300 animate-pulse" />
+                        <div className="w-5 h-5 rounded-full bg-gray-300 animate-pulse" style={{ animationDelay: '0.1s' }} />
+                        <div className="w-5 h-5 rounded-full bg-gray-300 animate-pulse" style={{ animationDelay: '0.2s' }} />
+                      </div>
+                      <div className="flex-1 h-8 bg-gray-200 rounded-md mx-6 animate-pulse" />
+                    </div>
+
+                    {/* Content skeleton - positioned just below nav bar */}
+                    <div className="absolute top-44 left-4 right-4">
+                      <div className="h-3 bg-gray-200 rounded w-3/4 mb-2 animate-pulse" />
+                      <div className="h-3 bg-gray-150 rounded w-1/2 mb-2 animate-pulse" style={{ animationDelay: '0.2s' }} />
+                      <div className="h-3 bg-gray-150 rounded w-2/3 animate-pulse" style={{ animationDelay: '0.3s' }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : searchResults.length > 0 ? (
+            // Actual results
+            <div className="relative h-[250px] overflow-hidden">
+              {/* Edge fade overlays */}
+              <div className="absolute left-0 top-0 bottom-0 w-[120px] z-20 pointer-events-none" style={{ background: 'linear-gradient(to right, white 0%, white 20%, transparent 100%)' }} />
+              <div className="absolute right-0 top-0 bottom-0 w-[120px] z-20 pointer-events-none" style={{ background: 'linear-gradient(to left, white 0%, white 20%, transparent 100%)' }} />
+
+              <div className="carousel-container absolute left-0 flex gap-12 py-4">
+                {/* Duplicate results for infinite scroll */}
+                {[...searchResults, ...searchResults].map((result, index) => (
+                  <div
+                    key={`${result.url}-${index}`}
+                    className="group flex-shrink-0 w-[400px] h-[240px] rounded-lg overflow-hidden border-2 border-gray-200/50 transition-all duration-300 hover:shadow-2xl bg-white relative"
+                    onMouseLeave={() => {
+                      if (showInstructionsForIndex === index) {
+                        setShowInstructionsForIndex(null);
+                        setAdditionalInstructions('');
+                      }
+                    } }
+                  >
+                    {/* Hover overlay with clone buttons or instructions input */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 flex flex-col items-center justify-center p-6">
+                      {showInstructionsForIndex === index ? (
+                        /* Instructions input view - matching main input style exactly */
+                        <div className="w-full max-w-[380px]">
+                          <div className="bg-white rounded-20" style={{
+                            boxShadow: "0px 0px 44px 0px rgba(0, 0, 0, 0.02), 0px 88px 56px -20px rgba(0, 0, 0, 0.03), 0px 56px 56px -20px rgba(0, 0, 0, 0.02), 0px 32px 32px -20px rgba(0, 0, 0, 0.03), 0px 16px 24px -12px rgba(0, 0, 0, 0.03), 0px 0px 0px 1px rgba(0, 0, 0, 0.05)"
+                          }}>
+                            {/* Input area matching main search */}
+                            <div className="p-16 flex gap-12 items-start w-full relative">
+                              {/* Instructions icon */}
+                              <div className="mt-2 flex-shrink-0">
+                                <svg
+                                  width="20"
+                                  height="20"
+                                  viewBox="0 0 20 20"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="opacity-40"
+                                >
+                                  <path d="M5 5H15M5 10H15M5 15H10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                </svg>
+                              </div>
+
+                              <textarea
+                                value={additionalInstructions}
+                                onChange={(e) => setAdditionalInstructions(e.target.value)}
+                                placeholder="Describe your customizations..."
+                                className="flex-1 bg-transparent text-body-input text-accent-black placeholder:text-black-alpha-48 focus:outline-none focus:ring-0 focus:border-transparent resize-none min-h-[60px]"
+                                autoFocus
+                                onClick={(e) => e.stopPropagation()}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Escape') {
+                                    e.stopPropagation();
+                                    setShowInstructionsForIndex(null);
+                                    setAdditionalInstructions('');
+                                  }
+                                } } />
+                            </div>
+
+                            {/* Divider */}
+                            <div className="border-t border-black-alpha-5" />
+
+                            {/* Buttons area matching main style */}
+                            <div className="p-10 flex justify-between items-center">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setShowInstructionsForIndex(null);
+                                  setAdditionalInstructions('');
+                                } }
+                                className="button relative rounded-10 px-8 py-8 text-label-medium font-medium flex items-center justify-center bg-black-alpha-4 hover:bg-black-alpha-6 text-black-alpha-48 active:scale-[0.995] transition-all"
+                              >
+                                <svg
+                                  width="20"
+                                  height="20"
+                                  viewBox="0 0 20 20"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <path d="M12 5L7 10L12 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                              </button>
+
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (additionalInstructions.trim()) {
+                                    sessionStorage.setItem('additionalInstructions', additionalInstructions);
+                                    handleSubmit(result);
+                                  }
+                                } }
+                                disabled={!additionalInstructions.trim()}
+                                className={`
+                                    button relative rounded-10 px-8 py-8 text-label-medium font-medium
+                                    flex items-center justify-center gap-6
+                                    ${additionalInstructions.trim()
+                                    ? 'button-primary text-accent-white active:scale-[0.995]'
+                                    : 'bg-black-alpha-4 text-black-alpha-24 cursor-not-allowed'}
+                                  `}
+                              >
+                                {additionalInstructions.trim() && <div className="button-background absolute inset-0 rounded-10 pointer-events-none" />}
+                                <span className="px-6 relative">Apply & Clone</span>
+                                <svg
+                                  width="20"
+                                  height="20"
+                                  viewBox="0 0 20 20"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="relative"
+                                >
+                                  <path d="M11.6667 4.79163L16.875 9.99994M16.875 9.99994L11.6667 15.2083M16.875 9.99994H3.125" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+                                </svg>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        /* Default buttons view */
+                        <>
+                          <div className="text-white text-center mb-3">
+                            <p className="text-base font-semibold mb-0.5">{result.title}</p>
+                            <p className="text-[11px] opacity-80">Choose how to clone this site</p>
+                          </div>
+
+                          <div className="flex gap-3 justify-center">
+                            {/* Instant Clone Button - Orange/Heat style */}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSubmit(result);
+                              } }
+                              className="bg-orange-500 hover:bg-orange-600 flex items-center justify-center button relative text-label-medium button-primary group/button rounded-10 p-8 gap-2 text-white active:scale-[0.995]"
+                            >
+                              <div className="button-background absolute inset-0 rounded-10 pointer-events-none" />
+                              <svg
+                                width="20"
+                                height="20"
+                                viewBox="0 0 20 20"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="relative"
+                              >
+                                <path d="M11.6667 4.79163L16.875 9.99994M16.875 9.99994L11.6667 15.2083M16.875 9.99994H3.125" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+                              </svg>
+                              <span className="px-6 relative">Instant Clone</span>
+                            </button>
+
+                            {/* Instructions Button - Gray style */}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setShowInstructionsForIndex(index);
+                                setAdditionalInstructions('');
+                              } }
+                              className="bg-gray-100 hover:bg-gray-200 flex items-center justify-center button relative text-label-medium rounded-10 p-8 gap-2 text-gray-700 active:scale-[0.995]"
+                            >
+                              <svg
+                                width="20"
+                                height="20"
+                                viewBox="0 0 20 20"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="opacity-60"
+                              >
+                                <path d="M5 5H15M5 10H15M5 15H10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                <path d="M14 14L16 16L14 18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                              </svg>
+                              <span className="px-6">Add Instructions</span>
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+
+                    {result.screenshot ? (
+                      <img
+                        src={result.screenshot}
+                        alt={result.title}
+                        className="w-full h-full object-cover object-top"
+                        loading="lazy" />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-50 flex items-center justify-center">
+                        <div className="text-center">
+                          <div className="w-16 h-16 rounded-full bg-gray-200 mx-auto mb-3 flex items-center justify-center">
+                            <svg
+                              width="32"
+                              height="32"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="text-gray-400"
+                            >
+                              <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="1.5" />
+                              <path d="M3 9H21" stroke="currentColor" strokeWidth="1.5" />
+                              <circle cx="6" cy="6" r="1" fill="currentColor" />
+                              <circle cx="9" cy="6" r="1" fill="currentColor" />
+                              <circle cx="12" cy="6" r="1" fill="currentColor" />
+                            </svg>
+                          </div>
+                          <p className="text-gray-500 text-sm font-medium">{result.title}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            // No results state
+            <div className="relative h-[250px] flex items-center justify-center">
+              <div className="text-center">
+                <div className="mb-4">
+                  <svg className="w-16 h-16 mx-auto text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <p className="text-gray-500 text-lg">No results found</p>
+                <p className="text-gray-400 text-sm mt-1">Try a different search term</p>
+              </div>
+            </div>
+          )}
+        </section>
+      )}
+    </div><style jsx>{`
+        @keyframes infiniteScroll {
+          from {
+            transform: translateX(0);
+          }
+          to {
+            transform: translateX(-50%);
+          }
+        }
+
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .carousel-container {
+          animation: infiniteScroll 30s linear infinite;
+        }
+
+        .carousel-container:hover {
+          animation-play-state: paused;
+        }
+
+        .skeleton-shimmer {
+          position: relative;
+          overflow: hidden;
+        }
+
+        .skeleton-gradient {
+          animation: shimmer 2s infinite;
+        }
+      `}</style>
+      </>
+  );
 }

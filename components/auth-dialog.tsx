@@ -15,11 +15,13 @@ export function AuthDialog({
   setOpen,
   supabase,
   view,
+  setView,
 }: {
   open: boolean
   setOpen: (open: boolean) => void
   supabase: SupabaseClient
   view: ViewType
+  setView: (view: ViewType) => void
 }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -38,6 +40,7 @@ export function AuthDialog({
             <Auth
               supabaseClient={supabase}
               view={view}
+              setView={setView}
               providers={['github', 'google']}
               socialLayout="horizontal"
               onSignUpValidate={validateEmail}

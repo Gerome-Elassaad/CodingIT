@@ -1,0 +1,8 @@
+/* Custom Font Faces */
+/* Using Geist fonts via CSS variables from Next.js font loading */
+/* Fonts are loaded in app/layout.tsx and available as:
+   - var(--font-geist-sans)
+   - var(--font-geist-mono)
+   - var(--font-inter)
+   - var(--font-roboto-mono)
+*/

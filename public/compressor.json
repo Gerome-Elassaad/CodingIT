@@ -1,0 +1,24 @@
+{
+  "configs": [
+    {
+      "extension": "avif",
+      "quality": 75,
+      "scale": 1
+    },
+    {
+      "extension": "webp",
+      "quality": 75,
+      "scale": 1
+    },
+    {
+      "extension": "jpeg",
+      "quality": 80,
+      "scale": 1
+    },
+    {
+      "extension": "png",
+      "quality": 80,
+      "scale": 1
+    }
+  ]
+}

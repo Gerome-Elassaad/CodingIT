@@ -1,0 +1,47 @@
+/* Fix for inside-border utility */
+.inside-border {
+  position: relative;
+}
+
+.inside-border::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid;
+  border-color: inherit;
+  transition: all 0.2s;
+  pointer-events: none;
+}
+
+.inside-border-x {
+  position: relative;
+}
+
+.inside-border-x::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border-left: 1px solid;
+  border-right: 1px solid;
+  border-color: inherit;
+  transition: all 0.2s;
+  pointer-events: none;
+}
+
+.inside-border-y {
+  position: relative;
+}
+
+.inside-border-y::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border-top: 1px solid;
+  border-bottom: 1px solid;
+  border-color: inherit;
+  transition: all 0.2s;
+  pointer-events: none;
+}
