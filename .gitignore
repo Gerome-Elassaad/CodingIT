@@ -51,11 +51,3 @@ next-env.d.ts
 
 gcp.json
 .vercel
-
-supabase
-
-.env
-schemas
-scripts
-.vscode
-mcp.json
