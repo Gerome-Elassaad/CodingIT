@@ -7,14 +7,10 @@ import { useToast } from '@/components/ui/use-toast'
 import { 
   AlertTriangle,
   Loader2,
-  CheckCircle,
-  ArrowUp,
-  ExternalLink
-} from 'lucide-react'
+  ArrowUp} from 'lucide-react'
 import { useState, useEffect, Suspense } from 'react'
 import { useAuthContext } from '@/lib/auth-provider'
 import { useUserTeam } from '@/lib/user-team-provider'
-import { useFeatureFlag } from '@/hooks/use-edge-flags'
 import ErrorBoundary, { SettingsSection } from '@/components/error-boundary'
 import { STRIPE_PLANS, formatPrice } from '@/lib/stripe'
 import { useSearchParams } from 'next/navigation'
@@ -45,8 +41,6 @@ function BillingSettingsContent() {
   const { toast } = useToast()
   const searchParams = useSearchParams()
   
-  useFeatureFlag('advanced-analytics', false)
-
   const [billingData, setBillingData] = useState<BillingData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isUpdating, setIsUpdating] = useState(false)

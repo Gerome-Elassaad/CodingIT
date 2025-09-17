@@ -57,5 +57,8 @@ supabase
 .env
 schemas
 scripts
-.vscode
+
 mcp.json
+.vscode
+extensions.json
+settings.json

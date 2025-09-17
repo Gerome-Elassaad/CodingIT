@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase-server'
-import { stripe } from '@/lib/stripe'
+import { stripe as stripeClient } from '@/lib/stripe'
+import Stripe from 'stripe'
 
 export async function GET() {
   const supabase = createServerClient()
@@ -12,17 +13,25 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  if (!stripe) {
+  if (!stripeClient) {
     return NextResponse.json({ error: 'Stripe not configured' }, { status: 500 })
   }
 
-  const { data: teamData } = await supabase
+  const { data: usersTeamsData, error: usersTeamsError } = await supabase
     .from('users_teams')
     .select('teams (stripe_customer_id)')
     .eq('user_id', user.id)
     .eq('is_default', true)
-    .single()
 
+  if (usersTeamsError) {
+    console.error('Error fetching user team:', usersTeamsError)
+    return NextResponse.json(
+      { error: 'Failed to fetch user team data' },
+      { status: 500 }
+    )
+  }
+
+  const teamData = usersTeamsData?.[0]
   const customerId = (teamData?.teams as any)?.stripe_customer_id
 
   if (!customerId) {
@@ -30,10 +39,10 @@ export async function GET() {
   }
 
   try {
-    const subscriptions = await stripe.subscriptions.list({
+    const subscriptions = await stripeClient.subscriptions.list({
       customer: customerId,
       status: 'active',
-      expand: ['data.items'],
+      expand: ['data.items.data.price'],
     })
 
     if (!subscriptions.data.length) {
@@ -41,16 +50,22 @@ export async function GET() {
     }
 
     const subscription = subscriptions.data[0]
-    const usage = subscription.items.data.map((item) => ({
-      id: item.id,
-      quantity: item.quantity,
-      price: {
-        id: (item.price as any).id,
-        unit_amount: (item.price as any).unit_amount,
-        currency: (item.price as any).currency,
-        product: (item.price as any).product,
-      },
-    }))
+    const usage = subscription.items.data
+      .filter((item: Stripe.SubscriptionItem) => item.price)
+      .map((item: Stripe.SubscriptionItem) => {
+        const price = item.price as Stripe.Price
+
+        return {
+          id: item.id,
+          quantity: item.quantity,
+          price: {
+            id: price.id,
+            unit_amount: price.unit_amount,
+            currency: price.currency,
+            product: price.product
+          }
+        }
+      })
 
     return NextResponse.json({ usage })
   } catch (error) {

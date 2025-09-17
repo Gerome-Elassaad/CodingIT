@@ -4,30 +4,24 @@ import { ViewType } from '@/components/auth';
 import { AuthDialog } from '@/components/auth-dialog';
 import { Chat } from '@/components/chat';
 import { PromptInputBox } from '@/components/ui/ai-prompt-box';
-import { ChatPicker } from '@/components/chat-picker';
-import { ChatSettings } from '@/components/chat-settings';
 import { NavBar } from '@/components/navbar';
-import { Preview } from '@/components/preview';
 import { Sidebar } from '@/components/sidebar';
 import { useAuth } from '@/lib/auth';
-import { Project, createProject, saveMessage, getProjectMessages, generateProjectTitle, getProject } from '@/lib/database';
-import { Message, toAISDKMessages, toMessageImage } from '@/lib/messages';
+import { Project, saveMessage, getProjectMessages, getProject } from '@/lib/database';
+import { Message, toMessageImage } from '@/lib/messages';
 import { LLMModelConfig } from '@/lib/models';
 import modelsList from '@/lib/models.json';
-import { FragmentSchema, fragmentSchema as schema } from '@/lib/schema';
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser';
 import templates, { TemplateId } from '@/lib/templates';
-import { ExecutionResult } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { DeepPartial } from 'ai';
-import { experimental_useObject as useObject } from '@ai-sdk/react';
 import { usePostHog } from 'posthog-js/react';
-import { SetStateAction, useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { useUserTeam } from '@/lib/user-team-provider';
 import { HeroPillSecond } from '@/components/announcement';
 import { useAnalytics } from '@/lib/analytics-service';
 import { SupabaseClient } from '@supabase/supabase-js';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
   const supabase = createSupabaseBrowserClient()
@@ -42,19 +36,13 @@ export default function Home() {
   const posthog = usePostHog()
   const analytics = useAnalytics()
 
-  const [result, setResult] = useState<ExecutionResult>()
   const [sessionStartTime] = useState(Date.now())
   const [fragmentsGenerated, setFragmentsGenerated] = useState(0)
   const [messagesCount, setMessagesCount] = useState(0)
   const [errorsEncountered, setErrorsEncountered] = useState(0)
   const [messages, setMessages] = useState<Message[]>([]);
-  const [fragment, setFragment] = useState<DeepPartial<FragmentSchema>>();
-  const [currentTab, setCurrentTab] = useState<'code' | 'fragment' | 'terminal' | 'interpreter' | 'editor'>('code');
-  const [selectedFile] = useState<{ path: string; content: string } | null>(null);
-  const [isPreviewLoading, setIsPreviewLoading] = useState(false);
   const [isAuthDialogOpen, setAuthDialog] = useState(false);
   const [authView, setAuthView] = useState<ViewType>('sign_in')
-  const [isRateLimited, setIsRateLimited] = useState(false)
   const setAuthDialogCallback = useCallback((isOpen: boolean) => {
     setAuthDialog(isOpen)
   }, [setAuthDialog])
@@ -62,13 +50,13 @@ export default function Home() {
   const setAuthViewCallback = useCallback((view: ViewType) => {
     setAuthView(view)
   }, [setAuthView])
-  const [errorMessage, setErrorMessage] = useState('')
   
   const [currentProject, setCurrentProject] = useState<Project | null>(null)
   const [isLoadingProject, setIsLoadingProject] = useState(false)
 
   const { session } = useAuth(setAuthDialogCallback, setAuthViewCallback)
   const { userTeam } = useUserTeam()
+  const router = useRouter();
 
 
   const handleChatSelected = async (chatId: string) => {
@@ -83,96 +71,6 @@ export default function Home() {
       return model.providerId !== 'ollama'
     }
     return true
-  })
-
-  const currentModel = filteredModels.find(
-    (model) => model.id === languageModel.model,
-  );
-
-
-  const { object, submit, isLoading, stop, error } = useObject({
-    api: '/api/chat',
-    schema,
-    onError: (error: Error) => {
-      setErrorsEncountered(prev => prev + 1)
-      console.error('Error submitting request:', error);
-      
-      let displayMessage = error.message;
-      let isRateLimit = false
-      
-      // Try to parse structured error response
-      try {
-        if (error.message.startsWith('{')) {
-          const errorData = JSON.parse(error.message)
-          displayMessage = errorData.error || error.message
-          isRateLimit = errorData.type === 'rate_limit'
-        } else {
-          // Handle common error patterns
-          if (error.message.includes('limit') || error.message.includes('rate')) {
-            isRateLimit = true
-            displayMessage = 'Rate limit exceeded. Please try again later or use your own API key.'
-          } else if (error.message.includes('API key') || error.message.includes('unauthorized')) {
-            displayMessage = 'Invalid API key. Please check your API key configuration in settings.'
-          } else if (error.message.includes('network') || error.message.includes('fetch')) {
-            displayMessage = 'Network error. Please check your connection and try again.'
-          } else if (error.message.includes('timeout')) {
-            displayMessage = 'Request timeout. Please try again.'
-          }
-        }
-      } catch {
-        // Use original error message if parsing fails
-      }
-      
-      setIsRateLimited(isRateLimit);
-      setErrorMessage(displayMessage);
-    },
-    onFinish: async ({ object: fragment, error }: { object: DeepPartial<FragmentSchema> | undefined, error: any }) => {
-      if (!error && fragment) {
-        setIsPreviewLoading(true);
-        // Enhanced analytics tracking
-        const generationTime = Date.now() - Date.now() // Would track actual generation time
-        if (fragment.code && fragment.template) {
-          analytics.trackFragmentGenerated(fragment as FragmentSchema, generationTime, 1)
-        }
-        setFragmentsGenerated(prev => prev + 1)
-        
-        
-        posthog.capture('fragment_generated', {
-          template: fragment?.template,
-        })
-
-        const response = await fetch('/api/sandbox', {
-          method: 'POST',
-          body: JSON.stringify({
-            fragment,
-            userID: session?.user?.id,
-            teamID: userTeam?.id,
-            accessToken: session?.access_token,
-          }),
-        })
-
-        const result = await response.json()
-        
-        if (!response.ok) {
-          console.error('Sandbox creation failed:', result)
-          setErrorMessage(result.error || 'Failed to create sandbox environment')
-          setIsPreviewLoading(false)
-          return
-        }
-
-        // Enhanced sandbox tracking
-        const creationTime = Date.now() - Date.now() // Would track actual creation time
-        analytics.trackSandboxCreation(fragment?.template || 'unknown', creationTime, response.ok)
-        
-        posthog.capture('sandbox_created', { url: result.url })
-
-        setResult(result)
-        setCurrentPreview({ fragment, result })
-        setMessage({ result })
-        setCurrentTab('fragment')
-        setIsPreviewLoading(false)
-      }
-    },
   })
 
   useEffect(() => {
@@ -206,41 +104,6 @@ export default function Home() {
     }
   }, [messages, currentProject, session, supabase])
 
-  useEffect(() => {
-    if (object) {
-      setFragment(object)
-      const content: Message['content'] = [
-        { type: 'text', text: object.commentary || '' },
-        { type: 'code', text: object.code || '' },
-      ]
-      setMessages(prev => {
-        const lastMessage = prev[prev.length - 1]
-        if (!lastMessage || lastMessage.role !== 'assistant') {
-          return [
-            ...prev,
-            {
-              role: 'assistant',
-              content,
-              object,
-            },
-          ]
-        } else {
-          const newMessages = [...prev]
-          newMessages[prev.length - 1] = {
-            ...lastMessage,
-            content,
-            object,
-          }
-          return newMessages
-        }
-      })
-    }
-  }, [object])
-
-  useEffect(() => {
-    if (error) stop()
-  }, [error, stop])
-
   // Track session end when component unmounts
   useEffect(() => {
     return () => {
@@ -256,30 +119,14 @@ export default function Home() {
     }
   }, [session?.user?.id, sessionStartTime, fragmentsGenerated, messagesCount, errorsEncountered, analytics])
 
-  function setMessage(message: Partial<Message>, index?: number) {
-    setMessages((previousMessages) => {
-      const updatedMessages = [...previousMessages]
-      updatedMessages[index ?? previousMessages.length - 1] = {
-        ...previousMessages[index ?? previousMessages.length - 1],
-        ...message,
-      }
-      return updatedMessages
-    })
-  }
-
   async function handleSendPrompt(message: string, files: File[] = []) {
     if (!session) {
       return setAuthDialog(true)
     }
 
-    if (isLoading) {
-      stop()
-    }
-
     const currentInput = message
     const currentFiles = files
-    setCurrentTab('code')
-
+    
     const content: Message['content'] = [{ type: 'text', text: currentInput }]
     
     const images = await toMessageImage(currentFiles)
@@ -296,33 +143,13 @@ export default function Home() {
     const updatedMessages = [...messages, newMessage]
     setMessages(updatedMessages)
 
-    const templateToSend =
-      selectedTemplate === 'auto'
-        ? templates
-        : { [selectedTemplate]: templates[selectedTemplate] }
+    // Store prompt and chat settings in local storage
+    localStorage.setItem('userPrompt', currentInput);
+    localStorage.setItem('chatSettings', JSON.stringify(languageModel));
+    localStorage.setItem('selectedTemplate', selectedTemplate);
 
-    submit({
-      userID: session?.user?.id,
-      teamID: userTeam?.id,
-      messages: toAISDKMessages(updatedMessages),
-      template: templateToSend,
-      model: currentModel,
-      config: languageModel,
-    })
-
-    if (!currentProject) {
-      try {
-        const title = await generateProjectTitle(currentInput)
-        if (supabase) {
-          const newProject = await createProject(supabase, title, selectedTemplate === 'auto' ? undefined : selectedTemplate)
-          if (newProject) {
-            setCurrentProject(newProject)
-          }
-        }
-      } catch (error) {
-        console.error('Error creating project:', error)
-      }
-    }
+    // Redirect to the generation page
+    router.push('/generation');
 
     // Enhanced chat analytics
     setMessagesCount(prev => prev + 1)
@@ -350,18 +177,6 @@ export default function Home() {
       model: languageModel.model,
     })
   }
-
-  function retry() {
-    submit({
-      userID: session?.user?.id,
-      teamID: userTeam?.id,
-      messages: toAISDKMessages(messages),
-      template: templates,
-      model: currentModel,
-      config: languageModel,
-    })
-  }
-
 
   function logout() {
     if (supabase) {
@@ -399,26 +214,8 @@ export default function Home() {
   }
 
   function handleClearChat() {
-    stop()
     setMessages([])
-    setFragment(undefined)
-    setResult(undefined)
-    setCurrentTab('code')
-    setIsPreviewLoading(false)
     setCurrentProject(null)
-  }
-
-  function setCurrentPreview(preview: {
-    fragment: DeepPartial<FragmentSchema> | undefined
-    result: ExecutionResult | undefined
-  }) {
-    setFragment(preview.fragment)
-    setResult(preview.result)
-  }
-
-  function handleUndo() {
-    setMessages((previousMessages) => [...previousMessages.slice(0, -2)])
-    setCurrentPreview({ fragment: undefined, result: undefined })
   }
 
   return (
@@ -444,7 +241,7 @@ export default function Home() {
         session ? "ml-16" : ""
       )}>
         <div
-          className={`flex flex-col w-full h-screen max-w-[800px] mx-auto px-4 ${fragment ? 'col-span-1' : 'col-span-2'}`}
+          className={`flex flex-col w-full h-screen max-w-[800px] mx-auto px-4 col-span-2`}
         >
           <NavBar
             session={session}
@@ -453,8 +250,8 @@ export default function Home() {
             onSocialClick={handleSocialClick}
             onClear={handleClearChat}
             canClear={messages.length > 0}
-            canUndo={messages.length > 1 && !isLoading}
-            onUndo={handleUndo}
+            canUndo={false}
+            onUndo={() => {}}
           />
           
           <div className="flex justify-center mb-4">
@@ -469,25 +266,13 @@ export default function Home() {
             ) : (
               <Chat
                 messages={messages}
-                isLoading={isLoading}
-                setCurrentPreview={setCurrentPreview}
+                isLoading={false}
+                setCurrentPreview={() => {}}
               />
             )}
           </div>
           
           <div className="space-y-4 mt-4">
-            {error && (
-              <div className="flex items-center justify-between p-2 bg-red-500/10 border border-red-500/20 rounded-lg text-red-500 text-sm">
-                <span>{errorMessage}</span>
-                <button onClick={retry} className="ml-4 p-1 rounded-md hover:bg-red-500/20">Retry</button>
-              </div>
-            )}
-            {isLoading && (
-              <div className="flex items-center justify-between p-2">
-                <span className="text-muted-foreground">Generating response...</span>
-                <button onClick={stop} className="ml-4 p-1 rounded-md border">Stop</button>
-              </div>
-            )}
               <PromptInputBox
                 onSend={handleSendPrompt}
                 templates={templates}
@@ -501,23 +286,6 @@ export default function Home() {
               />
           </div>
         </div>
-          <Preview
-          teamID={userTeam?.id}
-          accessToken={session?.access_token}
-          selectedTab={currentTab}
-          onSelectedTabChange={setCurrentTab}
-          isChatLoading={isLoading}
-          isPreviewLoading={isPreviewLoading}
-          fragment={fragment}
-          result={result as ExecutionResult}
-          onClose={() => setFragment(undefined)}
-          code={fragment?.code || ''}
-          selectedFile={selectedFile} onSave={function (): void {
-            throw new Error('Function not implemented.');
-          } } executeCode={function (): Promise<void> {
-            throw new Error('Function not implemented.');
-          } }        
-          />
       </div>
     </main>
   )

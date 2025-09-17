@@ -4,6 +4,10 @@ import { Sandbox } from '@e2b/code-interpreter'
 
 const sandboxTimeout = 10 * 60 * 1000
 
+declare global {
+  var activeSandbox: any;
+}
+
 export const maxDuration = 60
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -61,6 +65,7 @@ export async function POST(req: Request) {
             }
           : {}),
       })
+      global.activeSandbox = sbx;
     } catch (e2bError: any) {
       console.error('E2B Sandbox creation failed:', e2bError)
       return new Response(
@@ -74,7 +79,7 @@ export async function POST(req: Request) {
     }
 
     try {
-      if (fragment.has_additional_dependencies) {
+      if (fragment.has_additional_dependencies && fragment.install_dependencies_command) {
         await sbx.commands.run(fragment.install_dependencies_command)
       }
 
@@ -99,6 +104,7 @@ export async function POST(req: Request) {
 
         return new Response(
           JSON.stringify({
+            success: true,
             sbxId: sbx?.sandboxId,
             template: fragment.template,
             stdout: logs.stdout,
@@ -110,14 +116,17 @@ export async function POST(req: Request) {
         )
       }
 
-      await sbx.commands.run(fragment.install_dependencies_command, {
-        envs: {
-          PORT: (fragment.port || 80).toString(),
-        },
-      })
+      if (fragment.start_command) {
+        await sbx.commands.run(fragment.start_command, {
+          envs: {
+            PORT: (fragment.port || 80).toString(),
+          },
+        })
+      }
 
       return new Response(
         JSON.stringify({
+          success: true,
           sbxId: sbx?.sandboxId,
           template: fragment.template,
           url: `https://${sbx?.getHost(fragment.port || 80)}`,

@@ -3,6 +3,7 @@ import { ExecutionError, Result } from '@e2b/code-interpreter'
 
 type ExecutionResultBase = {
   sbxId: string
+  success: true
 }
 
 export type ExecutionResultInterpreter = ExecutionResultBase & {

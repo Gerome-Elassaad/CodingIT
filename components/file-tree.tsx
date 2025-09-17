@@ -99,10 +99,10 @@ export function FileTree({ files, onSelectFile, onCreateFile, onDeleteFile }: Fi
           </Dialog>
         </div>
       </div>
-      {files.map(file => (
-        <FileTreeNode 
-          key={file.name} 
-          node={file} 
+      {Array.isArray(files) && files.map(file => (
+        <FileTreeNode
+          key={file.name}
+          node={file}
           onSelectFile={onSelectFile}
           onDeleteFile={onDeleteFile}
         />

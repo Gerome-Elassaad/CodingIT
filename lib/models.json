@@ -5,469 +5,603 @@
       "provider": "OpenAI",
       "providerId": "openai",
       "name": "GPT-5",
-      "multiModal": true
+      "multiModal": true,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "gpt-5-mini",
       "provider": "OpenAI",
       "providerId": "openai",
       "name": "GPT-5 Mini",
-      "multiModal": true
+      "multiModal": true,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "gpt-5-nano",
       "provider": "OpenAI",
       "providerId": "openai",
       "name": "GPT-5 Nano",
-      "multiModal": true
+      "multiModal": true,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "o3",
       "provider": "OpenAI",
       "providerId": "openai",
       "name": "o3",
-      "multiModal": true
+      "multiModal": true,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "o3-mini",
       "provider": "OpenAI",
       "providerId": "openai",
       "name": "o3-mini",
-      "multiModal": false
+      "multiModal": false,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "o4-mini",
       "provider": "OpenAI",
       "providerId": "openai",
       "name": "o4-mini",
-      "multiModal": true
+      "multiModal": true,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "gpt-4.1",
       "provider": "OpenAI",
       "providerId": "openai",
       "name": "GPT-4.1",
-      "multiModal": true
+      "multiModal": true,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "gpt-4.1-mini",
       "provider": "OpenAI",
       "providerId": "openai",
       "name": "GPT-4.1 mini",
-      "multiModal": true
+      "multiModal": true,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "gpt-4.1-nano",
       "provider": "OpenAI",
       "providerId": "openai",
       "name": "GPT-4.1 nano",
-      "multiModal": true
+      "multiModal": true,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "gpt-4.5-preview",
       "provider": "OpenAI",
       "providerId": "openai",
       "name": "GPT-4.5 (preview)",
-      "multiModal": true
+      "multiModal": true,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "gpt-4o",
       "provider": "OpenAI",
       "providerId": "openai",
       "name": "GPT-4o",
-      "multiModal": true
+      "multiModal": true,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "gpt-4o-mini",
       "provider": "OpenAI",
       "providerId": "openai",
       "name": "GPT-4o mini",
-      "multiModal": true
+      "multiModal": true,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "o1",
       "provider": "OpenAI",
       "providerId": "openai",
       "name": "o1",
-      "multiModal": true
+      "multiModal": true,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "o1-mini",
       "provider": "OpenAI",
       "providerId": "openai",
       "name": "o1-mini",
-      "multiModal": false
+      "multiModal": false,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "gpt-4-turbo",
       "provider": "OpenAI",
       "providerId": "openai",
       "name": "GPT-4 Turbo",
-      "multiModal": true
+      "multiModal": true,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "claude-opus-4-1-20250805",
       "provider": "Anthropic",
       "providerId": "anthropic",
       "name": "Claude Opus 4.1",
-      "multiModal": true
+      "multiModal": true,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "claude-opus-4-20250514",
       "provider": "Anthropic",
       "providerId": "anthropic",
       "name": "Claude Opus 4",
-      "multiModal": true
+      "multiModal": true,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "claude-sonnet-4-20250514",
       "provider": "Anthropic",
       "providerId": "anthropic",
       "name": "Claude Sonnet 4",
-      "multiModal": true
+      "multiModal": true,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "claude-3-7-sonnet-latest",
       "provider": "Anthropic",
       "providerId": "anthropic",
       "name": "Claude Sonnet 3.7",
-      "multiModal": true
+      "multiModal": true,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "claude-3-5-sonnet-latest",
       "provider": "Anthropic",
       "providerId": "anthropic",
       "name": "Claude Sonnet 3.5",
-      "multiModal": true
+      "multiModal": true,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "claude-3-5-haiku-latest",
       "provider": "Anthropic",
       "providerId": "anthropic",
       "name": "Claude Haiku 3.5",
-      "multiModal": true
+      "multiModal": true,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "gemini-2.5-flash-preview-05-20",
       "provider": "Google Vertex AI",
       "providerId": "vertex",
       "name": "Gemini 2.5 Flash Preview 05-20",
-      "multiModal": true
+      "multiModal": true,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "gemini-2.5-pro-preview-05-06",
       "provider": "Google Vertex AI",
       "providerId": "vertex",
       "name": "Gemini 2.5 Pro Preview 05-06",
-      "multiModal": true
+      "multiModal": true,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "gemini-2.0-flash-001",
       "provider": "Google Vertex AI",
       "providerId": "vertex",
       "name": "Gemini 2.0 Flash",
-      "multiModal": true
+      "multiModal": true,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "gemini-2.0-flash-lite-001",
       "provider": "Google Vertex AI",
       "providerId": "vertex",
       "name": "Gemini 2.0 Flash Lite",
-      "multiModal": true
+      "multiModal": true,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "gemini-1.5-pro-002",
       "provider": "Google Vertex AI",
       "providerId": "vertex",
       "name": "Gemini 1.5 Pro",
-      "multiModal": true
+      "multiModal": true,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "gemini-1.5-flash-002",
       "provider": "Google Vertex AI",
       "providerId": "vertex",
       "name": "Gemini 1.5 Flash",
-      "multiModal": true
+      "multiModal": true,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "models/gemini-2.5-flash-preview-05-20",
       "provider": "Google Generative AI",
       "providerId": "google",
       "name": "Gemini 2.5 Flash Preview 05-20",
-      "multiModal": true
+      "multiModal": true,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "models/gemini-2.5-pro-preview-05-06",
       "provider": "Google Generative AI",
       "providerId": "google",
       "name": "Gemini 2.5 Pro Preview 05-06",
-      "multiModal": true
+      "multiModal": true,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "models/gemini-2.0-flash",
       "provider": "Google Generative AI",
       "providerId": "google",
       "name": "Gemini 2.0 Flash",
-      "multiModal": true
+      "multiModal": true,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "models/gemini-2.0-flash-lite",
       "provider": "Google Generative AI",
       "providerId": "google",
       "name": "Gemini 2.0 Flash Lite",
-      "multiModal": true
+      "multiModal": true,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "models/gemini-1.5-pro",
       "provider": "Google Generative AI",
       "providerId": "google",
       "name": "Gemini 1.5 Pro",
-      "multiModal": true
+      "multiModal": true,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "models/gemini-1.5-flash",
       "provider": "Google Generative AI",
       "providerId": "google",
       "name": "Gemini 1.5 Flash",
-      "multiModal": true
+      "multiModal": true,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "magistral-medium-latest",
       "provider": "Mistral",
       "providerId": "mistral",
       "name": "Magistral Medium",
-      "multiModal": true
+      "multiModal": true,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "magistral-small-latest",
       "provider": "Mistral",
       "providerId": "mistral",
       "name": "Magistral Small",
-      "multiModal": true
+      "multiModal": true,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "mistral-medium-latest",
       "provider": "Mistral",
       "providerId": "mistral",
       "name": "Mistral Medium",
-      "multiModal": true
+      "multiModal": true,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "mistral-large-latest",
       "provider": "Mistral",
       "providerId": "mistral",
       "name": "Mistral Large",
-      "multiModal": false
+      "multiModal": false,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "pixtral-large-latest",
       "provider": "Mistral",
       "providerId": "mistral",
       "name": "Pixtral Large",
-      "multiModal": true
+      "multiModal": true,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "mistral-small-latest",
       "provider": "Mistral",
       "providerId": "mistral",
       "name": "Mistral Small",
-      "multiModal": false
+      "multiModal": false,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "open-mistral-nemo",
       "provider": "Mistral",
       "providerId": "mistral",
       "name": "Mistral Nemo",
-      "multiModal": false
+      "multiModal": false,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "devstral-small-latest",
       "provider": "Mistral",
       "providerId": "mistral",
       "name": "Devstral Small",
-      "multiModal": false
+      "multiModal": false,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "codestral-latest",
       "provider": "Mistral",
       "providerId": "mistral",
       "name": "Codestral 25.01",
-      "multiModal": false
+      "multiModal": false,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "openai/gpt-oss-120b",
       "provider": "Groq",
       "providerId": "groq",
       "name": "GPT OSS 120B",
-      "multiModal": false
+      "multiModal": false,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "moonshotai/kimi-k2-instruct",
       "provider": "Groq",
       "providerId": "groq",
       "name": "Kimi K2 Instruct",
-      "multiModal": false
+      "multiModal": false,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "qwen/qwen3-32b",
       "provider": "Groq",
       "providerId": "groq",
       "name": "Qwen3 32B",
-      "multiModal": false
+      "multiModal": false,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "llama-3.3-70b-versatile",
       "provider": "Groq",
       "providerId": "groq",
       "name": "Llama 3.3 70B",
-      "multiModal": false
+      "multiModal": false,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "accounts/fireworks/models/qwen3-coder-480b-a35b-instruct",
       "provider": "Fireworks",
       "providerId": "fireworks",
       "name": "Qwen3 Coder 480B A35B Instruct",
-      "multiModal": false
+      "multiModal": false,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "accounts/fireworks/models/qwen3-235b-a22b-thinking-2507",
       "provider": "Fireworks",
       "providerId": "fireworks",
       "name": "Qwen3 235B-A22B-Thinking-2507",
-      "multiModal": false
+      "multiModal": false,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "accounts/fireworks/models/qwen3-235b-a22b-instruct-2507",
       "provider": "Fireworks",
       "providerId": "fireworks",
       "name": "Qwen3 235B-A22B-Instruct-2507",
-      "multiModal": false
+      "multiModal": false,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "accounts/fireworks/models/zai-org/glm-4p5",
       "provider": "Fireworks",
       "providerId": "fireworks",
       "name": "Z.ai GLM 4.5",
-      "multiModal": false
+      "multiModal": false,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "accounts/fireworks/models/kimi-k2-instruct",
       "provider": "Fireworks",
       "providerId": "fireworks",
       "name": "Kimi K2 Instruct",
-      "multiModal": false
+      "multiModal": false,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "accounts/fireworks/models/deepseek-r1",
       "provider": "Fireworks",
       "providerId": "fireworks",
       "name": "DeepSeek R1",
-      "multiModal": false
+      "multiModal": false,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "accounts/fireworks/models/llama4-maverick-instruct-basic",
       "provider": "Fireworks",
       "providerId": "fireworks",
       "name": "Llama 4 Maverick Instruct",
-      "multiModal": false
+      "multiModal": false,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "accounts/fireworks/models/llama4-scout-instruct-basic",
       "provider": "Fireworks",
       "providerId": "fireworks",
       "name": "Llama 4 Scout Instruct",
-      "multiModal": false
+      "multiModal": false,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "accounts/fireworks/models/llama-v3p1-405b-instruct",
       "provider": "Fireworks",
       "providerId": "fireworks",
       "name": "Llama 3.1 405B",
-      "multiModal": false
+      "multiModal": false,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "accounts/fireworks/models/llama-v3p1-70b-instruct",
       "provider": "Fireworks",
       "providerId": "fireworks",
       "name": "Llama 3.1 70B",
-      "multiModal": false
+      "multiModal": false,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
       "provider": "Together AI",
       "providerId": "togetherai",
       "name": "Llama 3.1 70B",
-      "multiModal": false
+      "multiModal": false,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "grok-4",
       "provider": "xAI",
       "providerId": "xai",
       "name": "Grok 4",
-      "multiModal": true
+      "multiModal": true,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "grok-3",
       "provider": "xAI",
       "providerId": "xai",
       "name": "Grok 3",
-      "multiModal": false
+      "multiModal": false,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "grok-3-mini",
       "provider": "xAI",
       "providerId": "xai",
       "name": "Grok 3 Mini",
-      "multiModal": false
+      "multiModal": false,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "grok-3-fast",
       "provider": "xAI",
       "providerId": "xai",
       "name": "Grok 3 Fast",
-      "multiModal": false
+      "multiModal": false,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "grok-3-mini-fast",
       "provider": "xAI",
       "providerId": "xai",
       "name": "Grok 3 Mini Fast",
-      "multiModal": false
+      "multiModal": false,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "grok-code-fast-1",
       "provider": "xAI",
       "providerId": "xai",
       "name": "Grok Code Fast 1",
-      "multiModal": false
+      "multiModal": false,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "deepseek-chat",
       "provider": "DeepSeek",
       "providerId": "deepseek",
       "name": "DeepSeek V3",
-      "multiModal": false
+      "multiModal": false,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "llama3.1",
       "provider": "Ollama",
       "providerId": "ollama",
       "name": "Llama 3.1",
-      "multiModal": false
+      "multiModal": false,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "mistral-nemo",
       "provider": "Ollama",
       "providerId": "ollama",
       "name": "Mistral Nemo",
-      "multiModal": false
+      "multiModal": false,
+      "temperature": 0.7,
+      "maxTokens": 4096
     },
     {
       "id": "mistral-large",
       "provider": "Ollama",
       "providerId": "ollama",
       "name": "Mistral Large",
-      "multiModal": false
+      "multiModal": false,
+      "temperature": 0.7,
+      "maxTokens": 4096
     }
   ]
 }

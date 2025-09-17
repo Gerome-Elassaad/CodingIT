@@ -9,6 +9,7 @@ export const fragmentSchema = z.object({
   additional_dependencies: z.array(z.string()).describe('Additional dependencies required by the fragment. Do not include dependencies that are already included in the template.'),
   has_additional_dependencies: z.boolean().describe('Detect if additional dependencies that are not included in the template are required by the fragment.'),
   install_dependencies_command: z.string().describe('Command to install additional dependencies required by the fragment.'),
+  start_command: z.string().optional().describe('Command to start the server.'),
   // install_dependencies_ready: z.boolean().describe('Detect if finished identifying additional dependencies.'),
   port: z.number().nullable().describe('Port number used by the resulted fragment. Null when no ports are exposed.'),
   file_path: z.string().describe('Relative path to the file, including the file name.'),

@@ -1,6 +1,7 @@
 import { Duration } from '@/lib/duration'
 import {
   getModelClient,
+  getModels,
   LLMModel,
   LLMModelConfig,
 } from '@/lib/models'
@@ -27,14 +28,14 @@ export async function POST(req: Request) {
     userID,
     teamID,
     template,
-    model,
+    model: modelId,
     config,
   }: {
     messages: CoreMessage[]
     userID: string | undefined
     teamID: string | undefined
     template: Templates
-    model: LLMModel
+    model: string
     config: LLMModelConfig
   } = await req.json()
 
@@ -60,19 +61,37 @@ export async function POST(req: Request) {
   console.log('userID', userID)
   console.log('teamID', teamID)
   console.log('template', template)
-  console.log('model', model)
+  console.log('model', modelId)
   console.log('config', config)
+
+  const models = getModels()
+  const model = models.find(m => m.id === modelId)
+
+  if (!model) {
+    return new Response(`Model not found: ${modelId}`, { status: 400 })
+  }
 
   const { model: modelNameString, apiKey: modelApiKey, ...modelParams } = config
   const modelClient = getModelClient(model, config)
+  const systemPrompt = toPrompt(template)
+
+  console.log('----- System Prompt -----')
+  console.log(systemPrompt)
+  console.log('-------------------------')
+  console.log('----- User Messages -----')
+  console.log(JSON.stringify(messages, null, 2))
+  console.log('-----------------------')
+  console.log('----- Model Params -----')
+  console.log(JSON.stringify(modelParams, null, 2))
+  console.log('------------------------')
 
   try {
     const stream = await streamObject({
       model: modelClient as LanguageModel,
       schema,
-      system: toPrompt(template),
+      system: systemPrompt,
       messages,
-      maxRetries: 2,
+      maxRetries: 5,
       ...modelParams,
     })
 

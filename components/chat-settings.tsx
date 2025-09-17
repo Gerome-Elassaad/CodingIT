@@ -14,7 +14,9 @@ import {
   TooltipTrigger,
 } from './ui/tooltip'
 import { LLMModelConfig } from '@/lib/models'
+import Cookies from 'js-cookie'
 import { Settings2 } from 'lucide-react'
+import { useCallback } from 'react'
 
 export function ChatSettings({
   apiKeyConfigurable,
@@ -27,6 +29,15 @@ export function ChatSettings({
   languageModel: LLMModelConfig
   onLanguageModelChange: (model: LLMModelConfig) => void
 }) {
+  const handleLanguageModelChange = useCallback(
+    (config: LLMModelConfig) => {
+      const newConfig = { ...languageModel, ...config }
+      onLanguageModelChange(config)
+      Cookies.set('llm_config', JSON.stringify(newConfig), { expires: 365 })
+    },
+    [languageModel, onLanguageModelChange],
+  )
+
   return (
     <DropdownMenu>
       <TooltipProvider>
@@ -53,7 +64,7 @@ export function ChatSettings({
                 required={true}
                 defaultValue={languageModel.apiKey}
                 onChange={(e) =>
-                  onLanguageModelChange({
+                  handleLanguageModelChange({
                     apiKey:
                       e.target.value.length > 0 ? e.target.value : undefined,
                   })
@@ -75,7 +86,7 @@ export function ChatSettings({
                 required={true}
                 defaultValue={languageModel.baseURL}
                 onChange={(e) =>
-                  onLanguageModelChange({
+                  handleLanguageModelChange({
                     baseURL:
                       e.target.value.length > 0 ? e.target.value : undefined,
                   })
@@ -101,7 +112,7 @@ export function ChatSettings({
               className="h-6 rounded-sm w-[84px] text-xs text-center tabular-nums"
               placeholder="Auto"
               onChange={(e) =>
-                onLanguageModelChange({
+                handleLanguageModelChange({
                   maxTokens: parseFloat(e.target.value) || undefined,
                 })
               }
@@ -120,7 +131,7 @@ export function ChatSettings({
               className="h-6 rounded-sm w-[84px] text-xs text-center tabular-nums"
               placeholder="Auto"
               onChange={(e) =>
-                onLanguageModelChange({
+                handleLanguageModelChange({
                   temperature: parseFloat(e.target.value) || undefined,
                 })
               }
@@ -137,7 +148,7 @@ export function ChatSettings({
               className="h-6 rounded-sm w-[84px] text-xs text-center tabular-nums"
               placeholder="Auto"
               onChange={(e) =>
-                onLanguageModelChange({
+                handleLanguageModelChange({
                   topP: parseFloat(e.target.value) || undefined,
                 })
               }
@@ -154,7 +165,7 @@ export function ChatSettings({
               className="h-6 rounded-sm w-[84px] text-xs text-center tabular-nums"
               placeholder="Auto"
               onChange={(e) =>
-                onLanguageModelChange({
+                handleLanguageModelChange({
                   topK: parseFloat(e.target.value) || undefined,
                 })
               }
@@ -173,7 +184,7 @@ export function ChatSettings({
               className="h-6 rounded-sm w-[84px] text-xs text-center tabular-nums"
               placeholder="Auto"
               onChange={(e) =>
-                onLanguageModelChange({
+                handleLanguageModelChange({
                   frequencyPenalty: parseFloat(e.target.value) || undefined,
                 })
               }
@@ -192,7 +203,7 @@ export function ChatSettings({
               className="h-6 rounded-sm w-[84px] text-xs text-center tabular-nums"
               placeholder="Auto"
               onChange={(e) =>
-                onLanguageModelChange({
+                handleLanguageModelChange({
                   presencePenalty: parseFloat(e.target.value) || undefined,
                 })
               }

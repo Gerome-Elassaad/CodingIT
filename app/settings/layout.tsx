@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { 
   User, 
-  Palette, 
   CreditCard, 
   Shield, 
   Settings as SettingsIcon,
@@ -49,6 +48,7 @@ export default function SettingsLayout({
 }) {
   const pathname = usePathname()
 
+  
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-6">

@@ -447,6 +447,8 @@ interface PromptInputBoxProps {
   onLanguageModelChange: (config: LLMModelConfig) => void
   apiKeyConfigurable: boolean
   baseURLConfigurable: boolean
+  value?: string;
+  onValueChange?: (value: string) => void;
 }
 export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref: React.Ref<HTMLDivElement>) => {
   React.useEffect(() => {
@@ -457,8 +459,10 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
       document.head.removeChild(styleSheet);
     };
   }, []);
-  const { onSend = () => {}, isLoading = false, placeholder = "Type your message here...", className, templates, selectedTemplate, onSelectedTemplateChange, models, languageModel, onLanguageModelChange, apiKeyConfigurable, baseURLConfigurable } = props;
-  const [input, setInput] = React.useState("");
+  const { onSend = () => {}, isLoading = false, placeholder = "Type your message here...", className, templates, selectedTemplate, onSelectedTemplateChange, models, languageModel, onLanguageModelChange, apiKeyConfigurable, baseURLConfigurable, value, onValueChange } = props;
+  const [internalInput, setInternalInput] = React.useState("");
+  const input = value !== undefined ? value : internalInput;
+  const setInput = onValueChange !== undefined ? onValueChange : setInternalInput;
   const [files, setFiles] = React.useState<File[]>([]);
   const [filePreviews, setFilePreviews] = React.useState<{ [key: string]: string }>({});
   const [selectedImage, setSelectedImage] = React.useState<string | null>(null);

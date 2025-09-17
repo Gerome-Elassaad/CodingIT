@@ -10,8 +10,10 @@ import {
 import { LLMModel, LLMModelConfig } from '@/lib/models'
 import { TemplateId, Templates } from '@/lib/templates'
 import 'core-js/actual/object/group-by'
+import Cookies from 'js-cookie'
 import { Sparkles } from 'lucide-react'
 import Image from 'next/image'
+import { useCallback } from 'react'
 
 export function ChatPicker({
   templates,
@@ -28,13 +30,30 @@ export function ChatPicker({
   languageModel: LLMModelConfig
   onLanguageModelChange: (config: LLMModelConfig) => void
 }) {
+  const handleSelectedTemplateChange = useCallback(
+    (template: 'auto' | TemplateId) => {
+      onSelectedTemplateChange(template)
+      Cookies.set('selected_template', template, { expires: 365 })
+    },
+    [onSelectedTemplateChange],
+  )
+
+  const handleLanguageModelChange = useCallback(
+    (config: LLMModelConfig) => {
+      const newConfig = { ...languageModel, ...config }
+      onLanguageModelChange(config)
+      Cookies.set('llm_config', JSON.stringify(newConfig), { expires: 365 })
+    },
+    [languageModel, onLanguageModelChange],
+  )
+
   return (
     <div className="flex items-center space-x-2">
       <div className="flex flex-col">
         <Select
           name="template"
           defaultValue={selectedTemplate}
-          onValueChange={onSelectedTemplateChange}
+          onValueChange={handleSelectedTemplateChange}
         >
           <SelectTrigger className="whitespace-nowrap border-none shadow-none focus:ring-0 px-0 py-0 h-6 text-xs bg-transparent">
             <SelectValue placeholder="Select a persona" />
@@ -74,7 +93,7 @@ export function ChatPicker({
         <Select
           name="languageModel"
           defaultValue={languageModel.model}
-          onValueChange={(e) => onLanguageModelChange({ model: e })}
+          onValueChange={(e) => handleLanguageModelChange({ model: e })}
         >
           <SelectTrigger className="whitespace-nowrap border-none shadow-none focus:ring-0 px-0 py-0 h-6 text-xs bg-transparent">
             <SelectValue placeholder="Language model" />

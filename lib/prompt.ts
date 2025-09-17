@@ -244,16 +244,15 @@ Response Format
 export function toPrompt(template: Templates) {
   const availableTemplates = `
 Fragment Templates
-
 Available templates:
 ${templatesToPrompt(template)}
 `
 
-  return [
+  const sections = {
     PERSONA,
     CORE_INSTRUCTIONS,
     E2B_CONSTRAINTS,
-    availableTemplates,
+    AVAILABLE_TEMPLATES: availableTemplates,
     TEMPLATE_SELECTION_LOGIC,
     FRAGMENT_SCHEMA,
     TEMPLATE_IMPLEMENTATION,
@@ -263,5 +262,9 @@ ${templatesToPrompt(template)}
     QUALITY_STANDARDS,
     AI_INTEGRATION,
     FINAL_REQUIREMENTS,
-  ].join('\n')
+  }
+
+  return Object.entries(sections)
+    .map(([key, value]) => `--- ${key} ---\n${value}`)
+    .join('\n\n')
 }
