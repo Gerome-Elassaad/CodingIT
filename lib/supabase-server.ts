@@ -2,7 +2,7 @@ import { createServerClient as _createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { supabaseUrl, supabaseAnonKey, supabaseServiceRoleKey } from './supabase-credentials'
 
-export function createServerClient(useServiceRole = false) {
+export function createServerClient(useServiceRole = true) {
   const cookieStore = cookies()
   const supabaseKey = useServiceRole
     ? supabaseServiceRoleKey

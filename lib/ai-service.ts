@@ -1,9 +1,13 @@
 import { LLMModelConfig } from '@/lib/models';
 import { Templates } from '@/lib/templates';
-import { CoreMessage } from 'ai';
+
+interface AIMessage {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+}
 
 export async function sendChatMessage(
-  messages: CoreMessage[],
+  messages: AIMessage[],
   template: Templates,
   model: string,
   config: LLMModelConfig
