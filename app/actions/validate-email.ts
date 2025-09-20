@@ -24,12 +24,12 @@ export type EmailValidationResponse = {
 }
 
 export async function validateEmail(email: string): Promise<boolean> {
-  if (!process.env.ZEROBOUNCE_API_KEY) {
+  if (!process.env.RESEND_API_KEY) {
     return true
   }
 
   const response = await fetch(
-    `https://api.zerobounce.net/v2/validate?api_key=${process.env.ZEROBOUNCE_API_KEY}&email=${email}&ip_address=`,
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/verify?token=pkce_d5a46b0a17d0c9f1f2666887a57186f593ff9d80abceb7e3437bc20c&type=signup&redirect_to=http://codingit.vercel.app`,
   )
 
   const responseData = await response.json()

@@ -18,33 +18,16 @@ export async function GET() {
 
     console.log('[get-sandbox-files] Fetching and analyzing file structure...');
     
-    // Get list of all relevant files
-    const findResult = await global.activeSandbox.runCommand({
-      cmd: 'find',
-      args: [
-        '.',
-        '-name', 'node_modules', '-prune', '-o',
-        '-name', '.git', '-prune', '-o',
-        '-name', 'dist', '-prune', '-o',
-        '-name', 'build', '-prune', '-o',
-        '-type', 'f',
-        '(',
-        '-name', '*.jsx',
-        '-o', '-name', '*.js',
-        '-o', '-name', '*.tsx',
-        '-o', '-name', '*.ts',
-        '-o', '-name', '*.css',
-        '-o', '-name', '*.json',
-        ')',
-        '-print'
-      ]
-    });
+    // Get list of all relevant files using E2B commands
+    const findResult = await global.activeSandbox.commands.run(
+      'find . -name node_modules -prune -o -name .git -prune -o -name dist -prune -o -name build -prune -o -type f \\( -name "*.jsx" -o -name "*.js" -o -name "*.tsx" -o -name "*.ts" -o -name "*.css" -o -name "*.json" \\) -print'
+    );
     
     if (findResult.exitCode !== 0) {
       throw new Error('Failed to list files');
     }
     
-    const fileList = (await findResult.stdout()).split('\n').filter((f: string) => f.trim());
+    const fileList = findResult.stdout.split('\n').filter((f: string) => f.trim());
     console.log('[get-sandbox-files] Found', fileList.length, 'files');
     
     // Read content of each file (limit to reasonable sizes)
@@ -52,24 +35,18 @@ export async function GET() {
     
     for (const filePath of fileList) {
       try {
-        // Check file size first
-        const statResult = await global.activeSandbox.runCommand({
-          cmd: 'stat',
-          args: ['-f', '%z', filePath]
-        });
-        
+        // Check file size first using E2B commands
+        const statResult = await global.activeSandbox.commands.run(`stat -c%s "${filePath}" 2>/dev/null || wc -c < "${filePath}"`);
+
         if (statResult.exitCode === 0) {
-          const fileSize = parseInt(await statResult.stdout());
-          
+          const fileSize = parseInt(statResult.stdout.trim());
+
           // Only read files smaller than 10KB
           if (fileSize < 10000) {
-            const catResult = await global.activeSandbox.runCommand({
-              cmd: 'cat',
-              args: [filePath]
-            });
-            
+            const catResult = await global.activeSandbox.commands.run(`cat "${filePath}"`);
+
             if (catResult.exitCode === 0) {
-              const content = await catResult.stdout();
+              const content = catResult.stdout;
               // Remove leading './' from path
               const relativePath = filePath.replace(/^\.\//, '');
               filesContent[relativePath] = content;
@@ -83,15 +60,12 @@ export async function GET() {
       }
     }
     
-    // Get directory structure
-    const treeResult = await global.activeSandbox.runCommand({
-      cmd: 'find',
-      args: ['.', '-type', 'd', '-not', '-path', '*/node_modules*', '-not', '-path', '*/.git*']
-    });
-    
+    // Get directory structure using E2B commands
+    const treeResult = await global.activeSandbox.commands.run('find . -type d -not -path "*/node_modules*" -not -path "*/.git*"');
+
     let structure = '';
     if (treeResult.exitCode === 0) {
-      const dirs = (await treeResult.stdout()).split('\n').filter((d: string) => d.trim());
+      const dirs = treeResult.stdout.split('\n').filter((d: string) => d.trim());
       structure = dirs.slice(0, 50).join('\n'); // Limit to 50 lines
     }
     

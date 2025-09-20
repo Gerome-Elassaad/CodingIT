@@ -23,21 +23,23 @@ import {
   disconnectUserIntegration,
 } from '@/lib/user-settings'
 import { UserIntegration } from '@/lib/database.types'
+import { GitHubIcon } from '@/components/icons'
+import { SiSupabase } from 'react-icons/si'
 
 const availableIntegrations = [
   {
-    id: 'google-drive',
-    name: 'Google Drive', 
-    description: 'Import and export files from your Drive',
-    icon: FolderOpen,
-    color: 'bg-blue-600 text-white'
+    id: 'GitHub',
+    name: 'GitHub', 
+    description: 'Import and export files from your GitHub repositories',
+    icon: GitHubIcon,
+    color: 'bg-grey-600 text-white'
   },
   {
-    id: 'gmail',
-    name: 'Gmail',
-    description: 'Send emails and access your inbox',
-    icon: Mail,
-    color: 'bg-red-600 text-white'
+    id: 'Supabase',
+    name: 'Supabase',
+    description: 'Integrate your database and authentication',
+    icon: SiSupabase,
+    color: 'bg-grey-600 text-white'
   },
   {
     id: 'google-calendar',

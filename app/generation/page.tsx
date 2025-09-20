@@ -15,7 +15,11 @@ import { getFileIcon, startGeneration, reapplyLastGeneration, downloadZip } from
 import { LLMModel, LLMModelConfig, getModels } from '@/lib/models';
 import { sendChatMessage, applyGeneratedCode } from '@/lib/ai-service';
 import templates, { Templates } from '@/lib/templates';
-import { CoreMessage } from 'ai';
+// Using custom message interface compatible with AI SDK
+interface AIMessage {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+}
 // Removed useChat import due to API incompatibility
 import CodeApplicationProgress from '@/components/CodeApplicationProgress';
 import { motion } from 'framer-motion';
@@ -403,28 +407,47 @@ function AISandboxPage() {
       console.log('[createSandbox] Sandbox creation already in progress, skipping...');
       return null;
     }
-    
+
     sandboxCreationRef.current = true;
     console.log('[createSandbox] Starting sandbox creation...');
     dispatch({ type: 'SET_STATE', payload: { loading: true, showLoadingBackground: true, responseArea: [], screenshotError: null } });
     updateStatus('Creating sandbox...', false);
-    
+
     try {
       const response = await fetch('/api/sandbox', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           fragment: {
-            template: 'nextjs-developer',
-            code: 'console.log("Hello, World!");',
-            file_path: 'index.js',
+            template: 'nextjs-14-app-directory',
+            code: `// Initial sandbox setup
+import React from 'react';
+
+function App() {
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="text-center">
+        <h1 className="text-4xl font-bold text-gray-900 mb-4">
+          Welcome to your sandbox!
+        </h1>
+        <p className="text-gray-600">
+          Start building your app by chatting with the AI.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+export default App;`,
+            file_path: 'src/App.jsx',
             port: 3000,
-            commentary: 'Initial sandbox creation',
+            commentary: 'Initial sandbox creation with Next.js 14 app directory structure',
             title: 'New Sandbox',
-            description: 'A new sandbox for development',
-            additional_dependencies: [],
-            has_additional_dependencies: false,
-            install_dependencies_command: '',
+            description: 'A new Next.js 14 sandbox for development',
+            additional_dependencies: ['tailwindcss', 'autoprefixer', 'postcss'],
+            has_additional_dependencies: true,
+            install_dependencies_command: 'npm install tailwindcss autoprefixer postcss',
+            start_command: 'npm run dev'
           }
         })
       });
@@ -436,10 +459,10 @@ function AISandboxPage() {
         const errorDetails = typeof errorData === 'object' && errorData.details ? errorData.details : `Status: ${response.status}`;
         throw new Error(`API Error: ${errorMessage} (${errorDetails})`);
       }
-      
+
       const data = await response.json();
       console.log('[createSandbox] Response data:', data);
-      
+
       if (data.success) {
         global.activeSandbox = data;
         sandboxCreationRef.current = false; // Reset the ref on success
@@ -447,45 +470,42 @@ function AISandboxPage() {
         dispatch({ type: 'SET_STATE', payload: { sandboxData: data } });
         updateStatus('Sandbox active', true);
         log('Sandbox created successfully!');
-        log(`Sandbox ID: ${data.sandboxId}`);
+        log(`Sandbox ID: ${data.sbxId || data.sandboxId}`);
         log(`URL: ${data.url}`);
-        
+
         // Update URL with sandbox ID
         const newParams = new URLSearchParams(searchParams?.toString() || '');
-        newParams.set('sandbox', data.sandboxId);
+        newParams.set('sandbox', data.sbxId || data.sandboxId);
         newParams.set('model', state.languageModel.model!);
         router.push(`/generation?${newParams.toString()}`, { scroll: false });
-        
+
         // Fade out loading background after sandbox loads
         setTimeout(() => {
           dispatch({ type: 'SET_STATE', payload: { showLoadingBackground: false } });
         }, 3000);
-        
+
         if (data.structure) {
           displayStructure(data.structure);
         }
-        
+
         // Fetch sandbox files after creation
         setTimeout(fetchSandboxFiles, 1000);
-        
-        // For Vercel sandboxes, Vite is already started during setupViteApp
-        // No need to restart it immediately after creation
-        // Only restart if there's an actual issue later
-        console.log('[createSandbox] Sandbox ready with Vite server running');
-        
+
+        console.log('[createSandbox] Sandbox ready with development server running');
+
         // Only add welcome message if not coming from home screen
         if (!fromHomeScreen) {
-          addChatMessage(`Sandbox created! ID: ${data.sandboxId}. I now have context of your sandbox and can help you build your app. Just ask me to create components and I'll automatically apply them!
+          addChatMessage(`Sandbox created! ID: ${data.sbxId || data.sandboxId}. I now have context of your sandbox and can help you build your app. Just ask me to create components and I'll automatically apply them!
 
 Tip: I automatically detect and install npm packages from your code imports (like react-router-dom, axios, etc.)`, 'system');
         }
-        
+
         setTimeout(() => {
           if (iframeRef.current) {
             iframeRef.current.src = data.url;
           }
         }, 100);
-        
+
         // Return the sandbox data so it can be used immediately
         return data;
       } else {
@@ -1074,7 +1094,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
         ? templates
         : ({ [initialTemplateId || state.selectedTemplate]: templates[initialTemplateId as keyof typeof templates || state.selectedTemplate] } as Templates);
 
-    const coreMessages: CoreMessage[] = state.chatMessages
+    const coreMessages: AIMessage[] = state.chatMessages
       .filter(m => m.type === 'user' || m.type === 'ai' || m.type === 'system')
       .map(m => ({
         role: m.type === 'ai' ? 'assistant' : m.type as 'user' | 'assistant' | 'system',
@@ -1328,7 +1348,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                         <div className="flex-1">
                           <div className="font-semibold mb-1">Build Errors Detected</div>
                           <div className="whitespace-pre-wrap text-sm">{msg.content}</div>
-                          <div className="mt-2 text-xs opacity-70">Press 'F' or click the Fix button above to resolve</div>
+                          <div className="mt-2 text-xs opacity-70">Press &lsquo;F&rsquo; or click the Fix button above to resolve</div>
                         </div>
                       </div>
                     ) : (

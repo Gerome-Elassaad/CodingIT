@@ -1,0 +1,86 @@
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="x-apple-disable-message-reformatting" />
+    <title>Confirm your sign-up</title>
+    <style type="text/css">
+      body {
+        background: linear-gradient(-225deg, #FFE29F 0%, #FFA99F 48%, #FF719A 100%);
+        font-family: figtree, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        padding: 40px 0;
+        color: #cccccc;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Hidden preview text -->
+    <div
+      style="display:none;overflow:hidden;line-height:1px;opacity:0;max-height:0;max-width:0"
+      aria-hidden="true"
+    >
+      Confirm your email to activate your CodinIT.dev account.
+    </div>
+
+    <table
+      align="center"
+      width="100%"
+      border="0"
+      cellpadding="0"
+      cellspacing="0"
+      role="presentation"
+      style="
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 24px 32px 48px;
+        background-color: #1a1a1a;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      "
+    >
+      <tbody>
+        <tr>
+          <td>
+
+            <p style="font-size: 16px; line-height: 26px; margin: 16px 0">
+              Welcome to <strong>CodinIT.dev</strong>! To complete your sign-up, click the button below to confirm your email address.
+            </p>
+
+            <div style="text-align: center; margin: 32px 0">
+              <a
+                href="{{ .ConfirmationURL }}"
+                style="
+                  display: inline-block;
+                  background-color: #f7ff9b;
+                  color: #1a1a1a;
+                  text-decoration: none;
+                  padding: 14px 24px;
+                  font-weight: bold;
+                  border-radius: 8px;
+                  font-size: 16px;
+                "
+              >
+                Confirm your email
+              </a>
+            </div>
+
+            <p style="font-size: 16px; line-height: 26px; margin: 16px 0">
+              After confirmation, you'll be redirected to:
+              <a href="{{ .RedirectTo }}" style="color: #f7ff9b; text-decoration: underline;">
+                {{ .RedirectTo }}
+              </a>
+            </p>
+
+            <p style="font-size: 14px; line-height: 24px; color: #b3b3b3; margin-top: 20px">
+              If you didn’t initiate this, you can safely ignore this message.
+            </p>
+
+            <p style="font-size: 12px; line-height: 20px; color: #777; margin: 0">
+              This message was sent by CodinIT.dev because this email address was used to register an account. 
+              Please note by confirming your email please note that you are automatically approving to being added to our waitlist.
+            </p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </body>
+</html>

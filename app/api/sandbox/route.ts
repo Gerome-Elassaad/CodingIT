@@ -106,6 +106,7 @@ export async function POST(req: Request) {
           JSON.stringify({
             success: true,
             sbxId: sbx?.sandboxId,
+            sandboxId: sbx?.sandboxId,
             template: fragment.template,
             stdout: logs.stdout,
             stderr: logs.stderr,
@@ -116,20 +117,37 @@ export async function POST(req: Request) {
         )
       }
 
-      if (fragment.start_command) {
-        await sbx.commands.run(fragment.start_command, {
-          envs: {
-            PORT: (fragment.port || 80).toString(),
-          },
-        })
+      // For web-based templates (Next.js, React, etc.)
+      let serverUrl = null;
+      try {
+        if (fragment.start_command) {
+          console.log('[sandbox] Starting development server with command:', fragment.start_command);
+          await sbx.commands.run(fragment.start_command, {
+            envs: {
+              PORT: (fragment.port || 3000).toString(),
+            },
+          });
+
+          // Wait a moment for the server to start
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+
+        serverUrl = `https://${sbx?.getHost(fragment.port || 3000)}`;
+        console.log('[sandbox] Server URL:', serverUrl);
+      } catch (startError) {
+        console.warn('[sandbox] Failed to start development server:', startError);
+        // Continue anyway - we'll provide the URL and let the client handle it
+        serverUrl = `https://${sbx?.getHost(fragment.port || 3000)}`;
       }
 
       return new Response(
         JSON.stringify({
           success: true,
           sbxId: sbx?.sandboxId,
+          sandboxId: sbx?.sandboxId,
           template: fragment.template,
-          url: `https://${sbx?.getHost(fragment.port || 80)}`,
+          url: serverUrl,
+          structure: 'Sandbox structure will be populated after file operations',
         } as ExecutionResultWeb),
         { headers: { 'Content-Type': 'application/json' } }
       )
