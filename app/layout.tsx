@@ -9,6 +9,7 @@ import { GeistMono } from 'geist/font/mono'
 import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import Script from 'next/script'
+import { cn } from '@/utils/cn'
 
 const inter = Inter({ 
   subsets: ["latin"],
@@ -72,7 +73,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${GeistSans.variable} ${GeistMono.variable}`}
+      className={cn(GeistSans.variable, GeistMono.variable)}
     >
       <body>
         <Script

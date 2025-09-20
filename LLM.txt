@@ -714,7 +714,7 @@ RULES
 
 WORKSPACE INFORMATION
 
-Operating E2B SANDBOX
+Operating E2B SANDBOX ENVIRONMENT
 Default Shell: /bin/zsh
 Home Directory: /home/app/
 

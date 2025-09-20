@@ -4,21 +4,42 @@
     "lib": ["python", "jupyter", "numpy", "pandas", "matplotlib", "seaborn", "plotly"],
     "file": "script.py",
     "instructions": "Runs code as a Jupyter notebook cell. Strong data analysis angle. Can use complex visualisation to explain results.",
-    "port": null
+    "port": null,
+    "fileStructure": {
+      "script.py": "# Python script for data analysis\nimport pandas as pd\nimport numpy as np\nimport matplotlib.pyplot as plt\n\n# Your code here\n"
+    },
+    "editableFiles": ["script.py"],
+    "language": "python",
+    "supportsFileEditing": true
   },
   "nextjs-developer": {
     "name": "Next.js developer",
     "lib": ["nextjs@14.2.5", "typescript", "@types/node", "@types/react", "@types/react-dom", "postcss", "tailwindcss", "shadcn"],
     "file": "pages/index.tsx",
     "instructions": "A Next.js 14+ app that reloads automatically. Using the pages router.",
-    "port": 3000
+    "port": 3000,
+    "fileStructure": {
+      "pages/index.tsx": "import { NextPage } from 'next'\n\nconst Home: NextPage = () => {\n  return (\n    <div className=\"min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100\">\n      <div className=\"text-center\">\n        <h1 className=\"text-4xl font-bold text-gray-900 mb-4\">Welcome to Next.js!</h1>\n        <p className=\"text-lg text-gray-600 mb-6\">Generated with CodinIT CLI</p>\n        <button className=\"px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors\">\n          Get Started\n        </button>\n      </div>\n    </div>\n  )\n}\n\nexport default Home",
+      "package.json": "{\n  \"name\": \"nextjs-app\",\n  \"version\": \"0.1.0\",\n  \"private\": true,\n  \"scripts\": {\n    \"dev\": \"next dev\",\n    \"build\": \"next build\",\n    \"start\": \"next start\",\n    \"lint\": \"next lint\"\n  },\n  \"dependencies\": {\n    \"next\": \"14.2.5\",\n    \"react\": \"^18.3.1\",\n    \"react-dom\": \"^18.3.1\"\n  },\n  \"devDependencies\": {\n    \"typescript\": \"^5.5.3\",\n    \"@types/node\": \"^20.14.0\",\n    \"@types/react\": \"^18.3.3\",\n    \"@types/react-dom\": \"^18.3.0\",\n    \"tailwindcss\": \"^3.4.0\",\n    \"postcss\": \"^8.4.0\",\n    \"autoprefixer\": \"^10.4.0\"\n  }\n}",
+      "styles/globals.css": "/* Global styles */\nhtml,\nbody {\n  padding: 0;\n  margin: 0;\n  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,\n    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;\n}\n"
+    },
+    "editableFiles": ["pages/index.tsx", "styles/globals.css", "components/*.tsx", "pages/*.tsx"],
+    "language": "typescript",
+    "supportsFileEditing": true
   },
   "vue-developer": {
     "name": "Vue.js developer",
     "lib": ["vue@latest", "nuxt@3.13.0", "tailwindcss"],
     "file": "app.vue",
     "instructions": "A Vue.js 3+ app that reloads automatically. Only when asked specifically for a Vue app.",
-    "port": 3000
+    "port": 3000,
+    "fileStructure": {
+      "app.vue": "<template>\n  <div>\n    <h1>Welcome to Vue.js!</h1>\n  </div>\n</template>\n\n<script setup>\n// Your Vue.js code here\n</script>\n\n<style scoped>\nh1 {\n  color: #2c3e50;\n}\n</style>",
+      "nuxt.config.ts": "export default defineNuxtConfig({\n  devtools: { enabled: true },\n  css: ['~/assets/css/main.css']\n})"
+    },
+    "editableFiles": ["app.vue", "components/*.vue", "pages/*.vue", "assets/css/*.css"],
+    "language": "vue",
+    "supportsFileEditing": true
   },
   "streamlit-developer": {
     "name": "Streamlit developer",
@@ -33,7 +54,14 @@
     ],
     "file": "app.py",
     "instructions": "A streamlit app that reloads automatically.",
-    "port": 8501
+    "port": 8501,
+    "fileStructure": {
+      "app.py": "import streamlit as st\nimport pandas as pd\nimport numpy as np\n\nst.title('My Streamlit App')\nst.write('Hello, World!')\n\n# Your Streamlit app code here\n",
+      "requirements.txt": "streamlit\npandas\nnumpy\nmatplotlib\nseaborn\nplotly\nrequests"
+    },
+    "editableFiles": ["app.py", "*.py"],
+    "language": "python",
+    "supportsFileEditing": true
   },
   "gradio-developer": {
     "name": "Gradio developer",
@@ -48,6 +76,13 @@
     ],
     "file": "app.py",
     "instructions": "A gradio app. Gradio Blocks/Interface should be called demo.",
-    "port": 7860
+    "port": 7860,
+    "fileStructure": {
+      "app.py": "import gradio as gr\nimport pandas as pd\nimport numpy as np\n\ndef process_data(input_text):\n    return f\"Processed: {input_text}\"\n\ndemo = gr.Interface(\n    fn=process_data,\n    inputs=\"text\",\n    outputs=\"text\",\n    title=\"My Gradio App\"\n)\n\nif __name__ == \"__main__\":\n    demo.launch()\n",
+      "requirements.txt": "gradio\npandas\nnumpy\nmatplotlib\nseaborn\nplotly\nrequests"
+    },
+    "editableFiles": ["app.py", "*.py"],
+    "language": "python",
+    "supportsFileEditing": true
   }
 }

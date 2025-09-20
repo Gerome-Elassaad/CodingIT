@@ -1,5 +1,24 @@
 import { FileInfo, ImportInfo, ComponentInfo } from '@/types/file-manifest';
 
+export function parseFile(content: string, filePath: string): Partial<FileInfo> {
+  const fileType = determineFileType(filePath, content);
+
+  switch (fileType) {
+    case 'component':
+    case 'page':
+    case 'layout':
+    case 'hook':
+    case 'context':
+      return parseJavaScriptFile(content, filePath);
+    case 'style':
+      return parseCSSFile(content, filePath);
+    case 'config':
+      return parseConfigFile(content, filePath);
+    default:
+      return parseGenericFile(content, filePath);
+  }
+}
+
 /**
  * Parse a JavaScript/JSX file to extract imports, exports, and component info
  */
@@ -259,4 +278,133 @@ export function buildComponentTree(files: Record<string, FileInfo>) {
   }
   
   return tree;
+}
+
+/**
+ * Parse CSS files to extract classes and style information
+ */
+export function parseCSSFile(content: string, filePath: string): Partial<FileInfo> {
+  const classes = extractCSSClasses(content);
+  const imports = extractCSSImports(content);
+
+  return {
+    type: 'style',
+    exports: classes,
+    imports: imports.map(imp => ({ source: imp, imports: [], isLocal: true })),
+  };
+}
+
+/**
+ * Parse configuration files (JSON, JS config files)
+ */
+export function parseConfigFile(content: string, filePath: string): Partial<FileInfo> {
+  return {
+    type: 'config',
+    exports: [],
+    imports: [],
+  };
+}
+
+/**
+ * Parse generic files (Python, text files, etc.)
+ */
+export function parseGenericFile(content: string, filePath: string): Partial<FileInfo> {
+  const fileExtension = filePath.split('.').pop()?.toLowerCase();
+
+  if (fileExtension === 'py') {
+    return parsePythonFile(content, filePath);
+  }
+
+  return {
+    type: 'utility',
+    exports: [],
+    imports: [],
+  };
+}
+
+/**
+ * Parse Python files to extract imports and function definitions
+ */
+export function parsePythonFile(content: string, filePath: string): Partial<FileInfo> {
+  const imports = extractPythonImports(content);
+  const functions = extractPythonFunctions(content);
+
+  return {
+    type: 'utility',
+    exports: functions,
+    imports: imports.map(imp => ({ source: imp, imports: [], isLocal: imp.startsWith('.') })),
+  };
+}
+
+/**
+ * Extract CSS class names from CSS content
+ */
+function extractCSSClasses(content: string): string[] {
+  const classRegex = /\.([a-zA-Z_][\w-]*)/g;
+  const classes: string[] = [];
+  let match;
+
+  while ((match = classRegex.exec(content)) !== null) {
+    if (!classes.includes(match[1])) {
+      classes.push(match[1]);
+    }
+  }
+
+  return classes;
+}
+
+/**
+ * Extract CSS @import statements
+ */
+function extractCSSImports(content: string): string[] {
+  const importRegex = /@import\s+["']([^"']+)["']/g;
+  const imports: string[] = [];
+  let match;
+
+  while ((match = importRegex.exec(content)) !== null) {
+    imports.push(match[1]);
+  }
+
+  return imports;
+}
+
+/**
+ * Extract Python import statements
+ */
+function extractPythonImports(content: string): string[] {
+  const imports: string[] = [];
+  const lines = content.split('\n');
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('import ') || trimmed.startsWith('from ')) {
+      const importMatch = trimmed.match(/(?:from\s+(\S+)\s+)?import\s+(.+)/);
+      if (importMatch) {
+        const [, fromModule, importList] = importMatch;
+        if (fromModule) {
+          imports.push(fromModule);
+        } else {
+          const modules = importList.split(',').map(m => m.trim().split(' as ')[0]);
+          imports.push(...modules);
+        }
+      }
+    }
+  }
+
+  return imports;
+}
+
+/**
+ * Extract Python function definitions
+ */
+function extractPythonFunctions(content: string): string[] {
+  const functionRegex = /def\s+([a-zA-Z_]\w*)\s*\(/g;
+  const functions: string[] = [];
+  let match;
+
+  while ((match = functionRegex.exec(content)) !== null) {
+    functions.push(match[1]);
+  }
+
+  return functions;
 }

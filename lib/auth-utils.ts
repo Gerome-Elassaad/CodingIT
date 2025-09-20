@@ -2,10 +2,6 @@ import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase-server'
 import type { User } from '@supabase/supabase-js'
 
-/**
- * Authenticate a user from a request and return the user object or an error response
- * @returns Object containing either the user or an error response
- */
 export async function authenticateUser(): Promise<{ user: User; error: null } | { user: null; error: NextResponse }> {
   try {
     const supabase = createServerClient()

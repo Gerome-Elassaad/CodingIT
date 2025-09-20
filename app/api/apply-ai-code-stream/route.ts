@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import type { SandboxState } from '@/types/sandbox';
 import type { ConversationState } from '@/types/conversation';
 import { sandboxManager } from '@/lib/sandbox/sandbox-manager';
+import { parseFile } from '@/lib/file-parser';
 
 declare global {
   var conversationState: ConversationState | null;
@@ -261,7 +262,12 @@ function parseAIResponse(response: string): ParsedResponse {
 
 export async function POST(request: NextRequest) {
   try {
-    const { response, isEdit = false, packages = [], sandboxId } = await request.json();
+    const {
+      response,
+      isEdit = false,
+      packages = [],
+      sandboxId
+    } = await request.json();
     
     if (!response) {
       return NextResponse.json({
@@ -278,7 +284,7 @@ export async function POST(request: NextRequest) {
     
     // Parse the AI response
     const parsed = parseAIResponse(response);
-    
+
     // Log what was parsed
     console.log('[apply-ai-code-stream] Parsed result:');
     console.log('[apply-ai-code-stream] Files found:', parsed.files.length);
@@ -288,6 +294,16 @@ export async function POST(request: NextRequest) {
       });
     }
     console.log('[apply-ai-code-stream] Packages found:', parsed.packages);
+
+    // Parse each file to extract metadata and improve the file structure
+    for (const file of parsed.files) {
+      try {
+        const fileInfo = parseFile(file.content, file.path);
+        console.log(`[apply-ai-code-stream] Parsed file ${file.path}: type=${fileInfo.type}, exports=${fileInfo.exports?.length || 0}, imports=${fileInfo.imports?.length || 0}`);
+      } catch (parseError) {
+        console.warn(`[apply-ai-code-stream] Could not parse file ${file.path}:`, parseError);
+      }
+    }
     
     // Initialize existingFiles if not already
     if (!global.existingFiles) {

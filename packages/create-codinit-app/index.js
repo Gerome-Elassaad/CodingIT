@@ -16,10 +16,11 @@ const program = new Command();
 
 program
   .name('create-codinit-app')
-  .description('Create a new CodinIT.dev project with your choice of sandbox provider')
+  .description('Create a new CodinIT.dev project with your choice of sandbox provider and template')
   .version('1.0.0')
+  .argument('[project-name]', 'Project name')
   .option('-s, --sandbox <provider>', 'Sandbox provider (e2b or vercel)')
-  .option('-n, --name <name>', 'Project name')
+  .option('-t, --template <template>', 'Project template (nextjs-developer, code-interpreter-v1, etc.)')
   .option('-p, --path <path>', 'Installation path (defaults to current directory)')
   .option('--skip-install', 'Skip npm install')
   .option('--dry-run', 'Run without making changes')
@@ -30,9 +31,12 @@ const options = program.opts();
 async function main() {
   console.log(chalk.cyan('\n🚀 Welcome to CodinIT.dev Setup!\n'));
 
+  const projectName = program.args[0];
+
   let config = {
     sandbox: options.sandbox,
-    name: options.name || 'CodinIT-app',
+    template: options.template,
+    name: projectName,
     path: options.path || process.cwd(),
     skipInstall: options.skipInstall || false,
     dryRun: options.dryRun || false
@@ -54,6 +58,7 @@ async function main() {
 
   console.log(chalk.gray('\nConfiguration:'));
   console.log(chalk.gray(`  Project: ${config.name}`));
+  console.log(chalk.gray(`  Template: ${config.template || 'default'}`));
   console.log(chalk.gray(`  Sandbox: ${config.sandbox}`));
   console.log(chalk.gray(`  Path: ${path.resolve(config.path, config.name)}\n`));
 

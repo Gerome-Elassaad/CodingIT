@@ -97,6 +97,7 @@ export interface GenerationState {
   shouldAutoGenerate: boolean;
   languageModel: LLMModelConfig;
   selectedTemplate: 'auto' | TemplateId;
+  editingFile: { path: string; content: string; type: string } | null;
 }
 
 export const initialState: GenerationState = {
@@ -164,6 +165,7 @@ export const initialState: GenerationState = {
   shouldAutoGenerate: false,
   languageModel: { model: 'models/gemini-1.5-pro' },
   selectedTemplate: 'auto',
+  editingFile: null,
 };
 
 export type GenerationAction =

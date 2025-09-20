@@ -1,24 +1,45 @@
 {
-  "name": "create-app",
+  "name": "create-codinit-app",
   "version": "1.0.0",
-  "description": "CLI to bootstrap with your choice of sandbox provider",
+  "description": "CLI to bootstrap CodinIT projects with templates and sandbox providers",
   "type": "module",
   "main": "index.js",
   "bin": {
     "create-codinit-app": "./index.js"
   },
+  "files": [
+    "index.js",
+    "lib/",
+    "templates/",
+    "README.md"
+  ],
   "scripts": {
-    "test": "node index.js --dry-run"
+    "test": "node index.js --dry-run",
+    "test:cli": "node lib/cli-test.js",
+    "test:full": "npm run test:cli && npm run test"
   },
   "keywords": [
+    "cli",
+    "create",
+    "codinit",
+    "bootstrap",
+    "template",
     "sandbox",
     "e2b",
     "vercel",
     "ai",
     "code-generation"
   ],
-  "author": "",
+  "author": "CodinIT Team",
   "license": "MIT",
+  "homepage": "https://codinit.dev",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/codinit-dev/codinit"
+  },
+  "bugs": {
+    "url": "https://github.com/codinit-dev/codinit/issues"
+  },
   "dependencies": {
     "chalk": "^5.3.0",
     "commander": "^11.1.0",
@@ -27,7 +48,7 @@
     "ora": "^7.0.1"
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=22.0.0"
   },
   "publishConfig": {
     "access": "public"

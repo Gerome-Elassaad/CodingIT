@@ -1,6 +1,3 @@
-// Standardized Analytics Event Definitions
-// This file defines the complete event schema for business intelligence and data monetization
-
 export interface BaseEventProperties {
   userId?: string
   teamId?: string

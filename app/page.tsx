@@ -22,6 +22,7 @@ import { HeroPillSecond } from '@/components/announcement';
 import { useAnalytics } from '@/lib/analytics-service';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 export default function Home() {
   const supabase = createSupabaseBrowserClient()
@@ -237,42 +238,111 @@ export default function Home() {
       )}
 
       <div className={cn(
-        "grid w-full md:grid-cols-2 transition-all duration-300",
+        "flex flex-col w-full h-screen transition-all duration-300",
         session ? "ml-16" : ""
       )}>
-        <div
-          className={`flex flex-col w-full h-screen max-w-[800px] mx-auto px-4 col-span-2`}
-        >
-          <NavBar
-            session={session}
-            showLogin={() => setAuthDialog(true)}
-            signOut={logout}
-            onSocialClick={handleSocialClick}
-            onClear={handleClearChat}
-            canClear={messages.length > 0}
-            canUndo={false}
-            onUndo={() => {}}
-          />
-          
-          <div className="flex justify-center mb-4">
-            <HeroPillSecond />
-          </div>
+        <NavBar
+          session={session}
+          showLogin={() => setAuthDialog(true)}
+          signOut={logout}
+          onSocialClick={handleSocialClick}
+          onClear={handleClearChat}
+          canClear={messages.length > 0}
+          canUndo={false}
+          onUndo={() => {}}
+        />
 
-          <div className="flex-grow overflow-y-auto">
-            {isLoadingProject ? (
-              <div className="flex items-center justify-center h-32">
-                <div className="text-muted-foreground">Loading project...</div>
+        {/* Landing page layout when no messages */}
+        {messages.length === 0 ? (
+          <div className="flex-1 flex flex-col items-center justify-center px-4 py-8">
+            <div className="w-full max-w-4xl mx-auto space-y-8">
+              {/* Hero section */}
+              <div className="text-center space-y-4">
+                <HeroPillSecond />
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight">
+                  Build anything with{' '}
+                  <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                    AI-powered
+                  </span>{' '}
+                  code
+                </h1>
+                <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                  Generate, edit, and deploy full-stack applications instantly. From Python scripts to Next.js apps, bring your ideas to life with AI.
+                </p>
               </div>
-            ) : (
-              <Chat
-                messages={messages}
-                isLoading={false}
-                setCurrentPreview={() => {}}
-              />
-            )}
+
+              {/* Centered prompt box */}
+              <div className="w-full max-w-2xl mx-auto">
+                <PromptInputBox
+                  onSend={handleSendPrompt}
+                  templates={templates}
+                  selectedTemplate={selectedTemplate}
+                  onSelectedTemplateChange={setSelectedTemplate}
+                  models={filteredModels}
+                  languageModel={languageModel}
+                  onLanguageModelChange={handleLanguageModelChange}
+                  apiKeyConfigurable={!process.env.NEXT_PUBLIC_NO_API_KEY_INPUT}
+                  baseURLConfigurable={!process.env.NEXT_PUBLIC_NO_BASE_URL_INPUT}
+                />
+              </div>
+
+              {/* Template icons */}
+              <div className="flex items-center justify-center gap-6 max-w-2xl mx-auto">
+                {Object.entries(templates).slice(0, 5).map(([templateId, template]) => (
+                  <button
+                    key={templateId}
+                    onClick={() => {
+                      setSelectedTemplate(templateId as TemplateId)
+                      // Store template selection and redirect to generation page
+                      localStorage.setItem('selectedTemplate', templateId);
+                      router.push('/generation');
+                    }}
+                    className="group flex flex-col items-center space-y-2 p-2 rounded-lg hover:bg-accent/50 transition-colors"
+                    title={template.name}
+                  >
+                    <div className="w-12 h-12 flex items-center justify-center rounded-lg bg-background border border-border group-hover:border-foreground/20 transition-colors">
+                      <Image
+                        src={`/thirdparty/templates/${templateId}.svg`}
+                        alt={`${template.name} icon`}
+                        width={24}
+                        height={24}
+                        className="object-contain"
+                        onError={(e) => {
+                          // Fallback to a default icon if the template icon doesn't exist
+                          (e.target as HTMLImageElement).src = '/thirdparty/templates/code-interpreter-v1.svg'
+                        }}
+                      />
+                    </div>
+                    <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">
+                      {template.name.split(' ')[0]}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-          
-          <div className="space-y-4 mt-4">
+        ) : (
+          /* Chat layout when messages exist */
+          <div className="flex-1 flex flex-col max-w-[800px] mx-auto px-4 w-full">
+            <div className="flex justify-center mb-4">
+              <HeroPillSecond />
+            </div>
+
+            <div className="flex-grow overflow-y-auto">
+              {isLoadingProject ? (
+                <div className="flex items-center justify-center h-32">
+                  <div className="text-muted-foreground">Loading project...</div>
+                </div>
+              ) : (
+                <Chat
+                  messages={messages}
+                  isLoading={false}
+                  setCurrentPreview={() => {}}
+                />
+              )}
+            </div>
+
+            <div className="space-y-4 mt-4">
               <PromptInputBox
                 onSend={handleSendPrompt}
                 templates={templates}
@@ -284,8 +354,9 @@ export default function Home() {
                 apiKeyConfigurable={!process.env.NEXT_PUBLIC_NO_API_KEY_INPUT}
                 baseURLConfigurable={!process.env.NEXT_PUBLIC_NO_BASE_URL_INPUT}
               />
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </main>
   )

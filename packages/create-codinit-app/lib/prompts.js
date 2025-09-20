@@ -1,3 +1,5 @@
+import { TemplateManager } from './template-manager.js';
+
 export function getPrompts(config) {
   const prompts = [];
 
@@ -6,7 +8,7 @@ export function getPrompts(config) {
       type: 'input',
       name: 'name',
       message: 'Project name:',
-      default: 'CodinIT-app',
+      default: 'codinit-app',
       validate: (input) => {
         if (!input || input.trim() === '') {
           return 'Project name is required';
@@ -15,6 +17,18 @@ export function getPrompts(config) {
           return 'Project name can only contain letters, numbers, hyphens, and underscores';
         }
         return true;
+      }
+    });
+  }
+
+  if (!config.template) {
+    prompts.push({
+      type: 'list',
+      name: 'template',
+      message: 'Choose your project template:',
+      choices: async () => {
+        const templateManager = new TemplateManager(process.cwd());
+        return await templateManager.getTemplateChoices();
       }
     });
   }

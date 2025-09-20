@@ -18,10 +18,6 @@ export interface FileUpload {
   updated_at: string
 }
 
-// =============================================
-// FILE UPLOAD OPERATIONS (Uses indexed foreign keys)
-// =============================================
-
 export async function getUserFiles(
   supabase: SupabaseClient<any, "public", any> | null = browserSupabase,
   userId: string,

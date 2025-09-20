@@ -5,7 +5,6 @@ import { useAuth } from './auth'
 import { useUserTeam } from './user-team-provider'
 import { FragmentSchema } from './schema'
 
-// Analytics Event Types for Business Intelligence
 export interface AnalyticsUser {
   id: string
   email?: string

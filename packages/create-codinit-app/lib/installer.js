@@ -4,15 +4,16 @@ import { execSync } from 'child_process';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import { getEnvPrompts } from './prompts.js';
+import { TemplateManager } from './template-manager.js';
 
 export async function installer(config) {
-  const { name, sandbox, path: installPath, skipInstall, dryRun, templatesDir } = config;
+  const { name, sandbox, template, path: installPath, skipInstall, dryRun, templatesDir } = config;
   const projectPath = path.join(installPath, name);
 
   if (dryRun) {
     console.log(chalk.blue('\n📋 Dry run - would perform these actions:'));
     console.log(chalk.gray(`  - Create directory: ${projectPath}`));
-    console.log(chalk.gray(`  - Copy base template files`));
+    console.log(chalk.gray(`  - Generate ${template || 'default'} template files`));
     console.log(chalk.gray(`  - Copy ${sandbox}-specific files`));
     console.log(chalk.gray(`  - Create .env file`));
     if (!skipInstall) {
@@ -39,13 +40,19 @@ export async function installer(config) {
   // Create project directory
   await fs.ensureDir(projectPath);
 
-  // Copy base template (shared files)
-  const baseTemplatePath = path.join(templatesDir, 'base');
-  if (await fs.pathExists(baseTemplatePath)) {
-    await copyTemplate(baseTemplatePath, projectPath);
+  // Generate project from template if specified
+  if (template) {
+    const templateManager = new TemplateManager(templatesDir);
+    await templateManager.generateFromTemplate(template, projectPath, name);
   } else {
-    // If no base template exists yet, copy from the main project
-    await copyMainProject(path.dirname(templatesDir), projectPath, sandbox);
+    // Copy base template (shared files) - fallback behavior
+    const baseTemplatePath = path.join(templatesDir, 'base');
+    if (await fs.pathExists(baseTemplatePath)) {
+      await copyTemplate(baseTemplatePath, projectPath);
+    } else {
+      // If no base template exists yet, copy from the main project
+      await copyMainProject(path.dirname(templatesDir), projectPath, sandbox);
+    }
   }
 
   // Copy provider-specific template

@@ -7,6 +7,7 @@ import { CheckCircle, X, Zap, Star, Crown, Loader2, ArrowUp } from 'lucide-react
 import { useState } from 'react'
 import { useToast } from '@/components/ui/use-toast'
 import { STRIPE_PLANS, formatPrice } from '@/lib/stripe'
+import { cn } from '@/utils/cn'
 
 interface UpgradeDialogProps {
   isOpen: boolean
@@ -127,7 +128,10 @@ export function UpgradeDialog({
           {Object.entries(STRIPE_PLANS).filter(([key]) => key !== 'free').map(([key, plan]) => (
             <div 
               key={key} 
-              className={`relative border rounded-lg p-6 ${key === recommendedPlan ? 'border-primary bg-primary/5' : 'border-border'}`}
+              className={cn(
+                'relative border rounded-lg p-6',
+                key === recommendedPlan ? 'border-primary bg-primary/5' : 'border-border'
+              )}
             >
               {key === recommendedPlan && (
                 <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2">

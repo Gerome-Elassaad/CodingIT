@@ -44,18 +44,10 @@ export function NavBar({
   canUndo: boolean
 }) {
   return (
-    <nav className="w-full flex bg-transparent py-4">
-      <div className="flex flex-1 items-center">
+    <nav className="w-full flex bg-transparent py-4 justify-between items-center max-w-7xl mx-auto px-4">
+      <div className="flex items-center">
         <Link href="/" className="flex items-center gap-2" target="_blank">
           <Logo width={120} height={120} />
-          <h1 className="whitespace-pre"> </h1>
-        </Link>
-        <Link
-          href="https://codinit.dev"
-          className="underline decoration-[rgba(229,123,0,.3)] decoration-2 text-[#ff8800]"
-          target="_blank"
-        >
-          
         </Link>
       </div>
       <div className="flex items-center gap-1 md:gap-4">

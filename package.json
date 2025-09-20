@@ -9,7 +9,9 @@
     "lint": "next lint",
     "test:api": "node tests/api-endpoints.test.js",
     "test:code": "node tests/code-execution.test.js",
-    "test:all": "npm run test:integration && npm run test:api && npm run test:code"
+    "test:all": "npm run test:integration && npm run test:api && npm run test:code",
+    "create-app": "node packages/create-codinit-app/index.js",
+    "publish:cli": "cd packages/create-codinit-app && npm publish"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "latest",

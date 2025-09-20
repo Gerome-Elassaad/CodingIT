@@ -34,8 +34,9 @@ Runtime Environment
 - Fragment execution has 10-minute timeout
 
 Package Management
-- JavaScript/TypeScript: Use npm
+- JavaScript/TypeScript: Use npm for package installation
 - Python: Use pip within E2B sandbox
+- Project creation: Users can use @packages/create-codinit-app CLI for bootstrapping new projects
 
 Database Recommendations
 - Local development: SQLite
@@ -88,9 +89,10 @@ code-interpreter-v1 (Python Data Analysis)
 
 nextjs-developer (Next.js Applications)
 - File: pages/index.tsx, Port: 3000
-- Use: TypeScript (strict mode), shadcn/ui, Tailwind CSS, pages router
+- Use: TypeScript (strict mode), Tailwind CSS, pages router
+- Use standard HTML elements with Tailwind CSS for styling
 - Implement SEO, API routes, authentication patterns
-- Stack: Next.js 14+, TypeScript, Tailwind CSS, shadcn/ui
+- Stack: Next.js 14+, TypeScript, Tailwind CSS
 
 vue-developer (Vue.js Applications)
 - File: app.vue, Port: 3000

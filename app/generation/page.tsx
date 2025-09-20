@@ -15,6 +15,7 @@ import { getFileIcon, startGeneration, reapplyLastGeneration, downloadZip } from
 import { LLMModel, LLMModelConfig, getModels } from '@/lib/models';
 import { sendChatMessage, applyGeneratedCode } from '@/lib/ai-service';
 import templates, { Templates } from '@/lib/templates';
+import { cn } from '@/utils/cn';
 // Using custom message interface compatible with AI SDK
 interface AIMessage {
   role: 'user' | 'assistant' | 'system';
@@ -88,6 +89,28 @@ function AISandboxPage() {
   const router = useRouter();
 
   const models: LLMModel[] = getModels();
+
+  // Helper function to determine file type from path
+  const getFileType = (filePath: string): string => {
+    const extension = filePath.split('.').pop()?.toLowerCase();
+    switch (extension) {
+      case 'js':
+      case 'jsx':
+      case 'ts':
+      case 'tsx':
+        return 'javascript';
+      case 'css':
+        return 'css';
+      case 'json':
+        return 'json';
+      case 'html':
+        return 'html';
+      case 'py':
+        return 'python';
+      default:
+        return 'text';
+    }
+  };
 
   const addChatMessage = (content: string, type: 'user' | 'ai' | 'system' | 'file-update' | 'command' | 'error', metadata?: any) => {
     dispatch({ type: 'ADD_CHAT_MESSAGE', payload: { content, type, timestamp: new Date(), metadata } });
@@ -653,7 +676,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                                     onClick={() => handleFileClick(fullPath)}
                                   >
                                     {getFileIcon(fileInfo.name)}
-                                    <span className={`text-xs flex items-center gap-1 ${isSelected ? 'font-medium' : ''}`}>
+                                    <span className={cn('text-xs flex items-center gap-1', isSelected && 'font-medium')}>
                                       {fileInfo.name}
                                       {fileInfo.edited && (
                                         <span className={`text-[10px] px-1 rounded ${
@@ -718,25 +741,117 @@ Tip: I automatically detect and install npm packages from your code imports (lik
                           {getFileIcon(selectedFile)}
                           <span className="font-mono text-sm">{selectedFile}</span>
                         </div>
-                        <button
-                          onClick={() => dispatch({ type: 'SET_STATE', payload: { selectedFile: null } })}
-                          className="hover:bg-primary/80 p-1 rounded transition-colors"
-                        >
-                          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => {
+                              const file = generationProgress.files.find(f => f.path === selectedFile);
+                              if (file) {
+                                dispatch({ type: 'SET_STATE', payload: { editingFile: file } });
+                              }
+                            }}
+                            className="hover:bg-primary/80 p-1 rounded transition-colors"
+                            title="Edit file"
+                          >
+                            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => dispatch({ type: 'SET_STATE', payload: { selectedFile: null } })}
+                            className="hover:bg-primary/80 p-1 rounded transition-colors"
+                            title="Close file"
+                          >
+                            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
                       </div>
                       <div className="bg-secondary border border-secondary-border rounded">
-                        <pre>
-                          <code>
-                            {(() => {
-                              // Find the file content from generated files
-                              const file = generationProgress.files.find(f => f.path === selectedFile);
-                              return file?.content || '// File content will appear here';
-                            })()}
-                          </code>
-                        </pre>
+                        {state.editingFile && state.editingFile.path === selectedFile ? (
+                          <div className="p-4">
+                            <textarea
+                              value={state.editingFile.content}
+                              onChange={(e) => {
+                                dispatch({
+                                  type: 'SET_STATE',
+                                  payload: {
+                                    editingFile: state.editingFile ? {
+                                      ...state.editingFile,
+                                      content: e.target.value
+                                    } : null
+                                  }
+                                });
+                              }}
+                              className="w-full h-96 font-mono text-sm bg-background text-foreground border border-border rounded p-3 resize-none focus:outline-none focus:ring-2 focus:ring-primary"
+                              placeholder="Edit your code here..."
+                            />
+                            <div className="flex gap-2 mt-4">
+                              <button
+                                onClick={async () => {
+                                  if (state.editingFile) {
+                                    try {
+                                      const response = await fetch('/api/edit-sandbox-file', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({
+                                          filePath: state.editingFile.path,
+                                          content: state.editingFile.content,
+                                          operation: 'write'
+                                        })
+                                      });
+
+                                      if (response.ok) {
+                                        // Update the file in generation progress
+                                        const updatedFiles = generationProgress.files.map(f =>
+                                          f.path === state.editingFile!.path
+                                            ? { ...f, content: state.editingFile!.content, edited: true }
+                                            : f
+                                        );
+
+                                        dispatch({
+                                          type: 'SET_STATE',
+                                          payload: {
+                                            generationProgress: {
+                                              ...generationProgress,
+                                              files: updatedFiles
+                                            },
+                                            editingFile: null
+                                          }
+                                        });
+
+                                        addChatMessage('File saved successfully!', 'file-update');
+                                      } else {
+                                        addChatMessage('Failed to save file', 'error');
+                                      }
+                                    } catch (error) {
+                                      addChatMessage(`Error saving file: ${error}`, 'error');
+                                    }
+                                  }
+                                }}
+                                className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors"
+                              >
+                                Save Changes
+                              </button>
+                              <button
+                                onClick={() => dispatch({ type: 'SET_STATE', payload: { editingFile: null } })}
+                                className="px-4 py-2 bg-secondary text-secondary-foreground border border-border rounded hover:bg-accent transition-colors"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <pre>
+                            <code>
+                              {(() => {
+                                // Find the file content from generated files
+                                const file = generationProgress.files.find(f => f.path === selectedFile);
+                                return file?.content || '// File content will appear here';
+                              })()}
+                            </code>
+                          </pre>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -1086,10 +1201,15 @@ Tip: I automatically detect and install npm packages from your code imports (lik
     addChatMessage(message, 'user');
     dispatch({ type: 'SET_STATE', payload: { aiChatInput: '' } });
 
+    // Determine template to send based on priority: initialTemplateId > state.selectedTemplate > 'auto'
+    const templateKey = initialTemplateId || state.selectedTemplate;
     const templateToSend =
-      initialTemplateId === 'auto'
-        ? templates
-        : ({ [initialTemplateId || state.selectedTemplate]: templates[initialTemplateId as keyof typeof templates || state.selectedTemplate] } as Templates);
+      (!templateKey || templateKey === 'auto')
+        ? templates  // Send all templates when 'auto' or undefined
+        : ({ [templateKey]: templates[templateKey as keyof typeof templates] } as Templates);
+
+    // Fallback to all templates if the specific template doesn't exist
+    const finalTemplateToSend = Object.keys(templateToSend).length === 0 ? templates : templateToSend;
 
     const coreMessages: AIMessage[] = state.chatMessages
       .filter(m => m.type === 'user' || m.type === 'ai' || m.type === 'system')
@@ -1103,7 +1223,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
     try {
       const body = await sendChatMessage(
         coreMessages,
-        templateToSend,
+        finalTemplateToSend,
         initialSettings?.model || state.languageModel.model!,
         initialSettings || state.languageModel
       );
@@ -1115,23 +1235,129 @@ Tip: I automatically detect and install npm packages from your code imports (lik
       const reader = body.getReader();
       const decoder = new TextDecoder();
       let streamedContent = '';
+      let parsedFragment: any = null;
+
+      // Set up generation progress
+      dispatch({
+        type: 'SET_STATE',
+        payload: {
+          generationProgress: {
+            ...state.generationProgress,
+            isGenerating: true,
+            status: 'Generating code...',
+            streamedCode: '',
+            files: []
+          }
+        }
+      });
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
+
         const chunk = decoder.decode(value, { stream: true });
         streamedContent += chunk;
+
+        // Update the streamed code in real-time
+        dispatch({
+          type: 'SET_STATE',
+          payload: {
+            generationProgress: {
+              ...state.generationProgress,
+              streamedCode: streamedContent
+            }
+          }
+        });
+
+        // Try to parse partial objects from the stream
+        const lines = streamedContent.split('\n');
+        for (const line of lines) {
+          if (line.startsWith('0:')) {
+            try {
+              const jsonStr = line.substring(2);
+              const partialData = JSON.parse(jsonStr);
+
+              // Update the current fragment being built
+              if (partialData) {
+                parsedFragment = { ...parsedFragment, ...partialData };
+
+                // Update generation progress with current fragment
+                dispatch({
+                  type: 'SET_STATE',
+                  payload: {
+                    generationProgress: {
+                      ...state.generationProgress,
+                      currentFile: parsedFragment.file_path ? {
+                        path: parsedFragment.file_path,
+                        content: parsedFragment.code || '',
+                        type: getFileType(parsedFragment.file_path)
+                      } : undefined
+                    }
+                  }
+                });
+              }
+            } catch (e) {
+              // Continue parsing, partial JSON is expected
+            }
+          }
+        }
       }
 
       try {
-        const parsedResponse = JSON.parse(streamedContent);
-        if (parsedResponse.content) {
-          addChatMessage(parsedResponse.content, 'ai');
+        // Process the final fragment
+        if (parsedFragment && parsedFragment.code && parsedFragment.file_path) {
+          addChatMessage(`Generated: ${parsedFragment.title || 'Code fragment'}`, 'ai');
+
+          // Add the completed file to generation progress
+          const newFile = {
+            path: parsedFragment.file_path,
+            content: parsedFragment.code,
+            type: getFileType(parsedFragment.file_path),
+            completed: true
+          };
+
+          dispatch({
+            type: 'SET_STATE',
+            payload: {
+              generationProgress: {
+                ...state.generationProgress,
+                files: [...state.generationProgress.files, newFile],
+                currentFile: undefined,
+                isGenerating: false,
+                status: 'Generation completed'
+              }
+            }
+          });
+
+          // Auto-apply the generated code
+          await applyGeneratedCode(parsedFragment.code, false);
+
         } else {
-          addChatMessage('Received a partial or unexpected response from AI.', 'error');
+          addChatMessage('Received incomplete response from AI.', 'error');
+          dispatch({
+            type: 'SET_STATE',
+            payload: {
+              generationProgress: {
+                ...state.generationProgress,
+                isGenerating: false,
+                status: 'Generation failed'
+              }
+            }
+          });
         }
       } catch (e) {
-        addChatMessage('Failed to parse AI response.', 'error');
+        console.error('Error processing AI response:', e);
+        addChatMessage('Failed to process AI response.', 'error');
+        dispatch({
+          type: 'SET_STATE',
+          payload: {
+            generationProgress: {
+              ...state.generationProgress,
+              isGenerating: false,
+              status: 'Generation failed'
+            }
+          }
+        });
       }
     } catch (error: any) {
       console.error('Error sending message:', error);
@@ -1311,7 +1537,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
               
               return (
                 <div key={idx} className="block">
-                  <div className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={cn('flex', msg.type === 'user' ? 'justify-end' : 'justify-start')}>
                     <div className="block">
                       <div className={`block rounded-[10px] px-14 py-8 ${
                         msg.type === 'user' ? 'bg-primary text-primary-foreground ml-auto max-w-[80%]' :

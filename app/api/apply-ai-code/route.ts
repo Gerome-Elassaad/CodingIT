@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { SandboxState } from '@/types/sandbox';
 import type { ConversationState } from '@/types/conversation';
+import { parseFile } from '@/lib/file-parser';
 
 declare global {
   var conversationState: ConversationState | null;
