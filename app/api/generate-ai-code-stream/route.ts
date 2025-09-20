@@ -1,8 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createGroq } from '@ai-sdk/groq';
-import { createAnthropic } from '@ai-sdk/anthropic';
-import { createOpenAI } from '@ai-sdk/openai';
-import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { streamText } from 'ai';
 import type { SandboxState } from '@/types/sandbox';
 import { selectFilesForEdit, getFileContents, formatFilesForAI } from '@/lib/context-selector';
@@ -10,6 +6,7 @@ import { executeSearchPlan, formatSearchResultsForAI, selectTargetFile } from '@
 import { FileManifest } from '@/types/file-manifest';
 import type { ConversationState, ConversationMessage, ConversationEdit } from '@/types/conversation';
 import { appConfig } from '@/config/app.config';
+import { getModels, getModelClient, LLMModelConfig } from '@/lib/models';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,24 +14,7 @@ const isUsingAIGateway = !!process.env.E2B_API_KEY;
 
 console.log('[generate-ai-code-stream] AI Gateway config:', {
   isUsingAIGateway,
-  hasGroqKey: !!process.env.GEMINI_API_KEY,
   hasAIGatewayKey: !!process.env.E2B_API_KEY
-});
-
-const groq = createGroq({
-  apiKey: process.env.E2B_API_KEY ?? process.env.GROQ_API_KEY,
-});
-
-const anthropic = createAnthropic({
-  apiKey: process.env.E2B_API_KEY ?? process.env.ANTHROPIC_API_KEY,
-});
-
-const googleGenerativeAI = createGoogleGenerativeAI({
-  apiKey: process.env.E2B_API_KEY ?? process.env.GEMINI_API_KEY,
-});
-
-const openai = createOpenAI({
-  apiKey: process.env.E2B_API_KEY ?? process.env.OPENAI_API_KEY,
 });
 
 // Helper function to analyze user preferences from conversation history
@@ -83,7 +63,13 @@ declare global {
 
 export async function POST(request: NextRequest) {
   try {
-    const { prompt, model = 'openai/gpt-oss-20b', context, isEdit = false } = await request.json();
+    const {
+      prompt,
+      model = appConfig.ai.defaultModel,
+      context,
+      isEdit = false,
+      config = {} as LLMModelConfig
+    } = await request.json();
     
     console.log('[generate-ai-code-stream] Received request:');
     console.log('[generate-ai-code-stream] - prompt:', prompt);
@@ -293,7 +279,6 @@ User request: "${prompt}"`;
               }
             }
           } else {
-            // Fall back to old method if AI analysis fails
             console.warn('[generate-ai-code-stream] AI intent analysis failed, falling back to keyword method');
             if (manifest) {
               editContext = selectFilesForEdit(prompt, manifest);
@@ -306,7 +291,6 @@ User request: "${prompt}"`;
             }
           }
           
-          // If we got an edit context from any method, use its system prompt
           if (editContext) {
             enhancedSystemPrompt = editContext.systemPrompt;
             
@@ -1172,48 +1156,25 @@ CRITICAL: When files are provided in the context:
         
         // Track packages that need to be installed
         const packagesToInstall: string[] = [];
-        
-        // Determine which provider to use based on model
-        const availableProviders = {
-          openai: process.env.OPENAI_API_KEY,
-          anthropic: process.env.ANTHROPIC_API_KEY,
-          google: process.env.GEMINI_API_KEY,
-          groq: process.env.GROQ_API_KEY,
-        };
 
-        let selectedProvider: any;
-        let actualModel: string;
-        let providerName: 'OpenAI' | 'Anthropic' | 'Google' | 'Groq' | 'Unknown' = 'Unknown';
+        // Get the model configuration from the models system
+        const models = getModels();
+        const modelData = models.find(m => m.id === model);
 
-        if (availableProviders.openai) {
-          selectedProvider = openai;
-          actualModel = 'gpt-4o';
-          providerName = 'OpenAI';
-        } else if (availableProviders.anthropic) {
-          selectedProvider = anthropic;
-          actualModel = 'claude-3-5-sonnet-latest';
-          providerName = 'Anthropic';
-        } else if (availableProviders.google) {
-          selectedProvider = googleGenerativeAI;
-          actualModel = 'models/gemini-1.5-pro';
-          providerName = 'Google';
-        } else if (availableProviders.groq) {
-          selectedProvider = groq;
-          actualModel = 'llama-3.3-70b-versatile';
-          providerName = 'Groq';
-        } else {
-          throw new Error("No AI provider API key found in environment variables.");
+        if (!modelData) {
+          throw new Error(`Model not found: ${model}. Available models: ${models.map(m => m.id).join(', ')}`);
         }
 
-        const modelProvider = selectedProvider;
+        // Create the model client using the proper configuration
+        const modelClient = getModelClient(modelData, config);
 
-        console.log(`[generate-ai-code-stream] Using provider: ${providerName}, model: ${actualModel}`);
-        console.log(`[generate-ai-code-stream] AI Gateway enabled: ${isUsingAIGateway}`);
-        console.log(`[generate-ai-code-stream] Model string: ${model}`);
+        console.log(`[generate-ai-code-stream] Using model: ${model} (${modelData.name})`);
+        console.log(`[generate-ai-code-stream] Provider: ${modelData.provider}`);
+        console.log(`[generate-ai-code-stream] Config:`, { ...config, apiKey: config.apiKey ? '[REDACTED]' : undefined });
 
         // Make streaming API call with appropriate provider
         const streamOptions: any = {
-          model: modelProvider(actualModel),
+          model: modelClient,
           messages: [
             { 
               role: 'system', 
@@ -1274,19 +1235,16 @@ If you're running out of space, generate FEWER files but make them COMPLETE.
 It's better to have 3 complete files than 10 incomplete files.`
             }
           ],
-          maxTokens: 8192, // Reduce to ensure completion
-          stopSequences: [] // Don't stop early
-          // Note: Neither Groq nor Anthropic models support tool/function calling in this context
-          // We use XML tags for package detection instead
+          maxTokens: config.maxTokens || appConfig.ai.maxTokens,
+          temperature: config.temperature || modelData.temperature || appConfig.ai.defaultTemperature,
+          topP: config.topP,
+          topK: config.topK,
+          frequencyPenalty: config.frequencyPenalty,
+          presencePenalty: config.presencePenalty
         };
-        
-        // Add temperature for non-reasoning models
-        if (!model.startsWith('openai/gpt-5')) {
-          streamOptions.temperature = 0.7;
-        }
-        
-        // Add reasoning effort for GPT-5 models
-        if (providerName === 'OpenAI') {
+
+        // Add provider-specific configurations
+        if (modelData.providerId === 'openai' && model.includes('gpt-5')) {
           streamOptions.experimental_providerMetadata = {
             openai: {
               reasoningEffort: 'high'
@@ -1304,47 +1262,30 @@ It's better to have 3 complete files than 10 incomplete files.`
             break; // Success, exit retry loop
           } catch (streamError: any) {
             console.error(`[generate-ai-code-stream] Error calling streamText (attempt ${retryCount + 1}/${maxRetries + 1}):`, streamError);
-            
-            // Check if this is a Groq service unavailable error
-            const isGroqServiceError = providerName === 'Groq' && streamError.message?.includes('Service unavailable');
-            const isRetryableError = streamError.message?.includes('Service unavailable') || 
+
+            const isRetryableError = streamError.message?.includes('Service unavailable') ||
                                     streamError.message?.includes('rate limit') ||
                                     streamError.message?.includes('timeout');
-            
+
             if (retryCount < maxRetries && isRetryableError) {
               retryCount++;
               console.log(`[generate-ai-code-stream] Retrying in ${retryCount * 2} seconds...`);
-              
+
               // Send progress update about retry
-              await sendProgress({ 
-                type: 'info', 
-                message: `Service temporarily unavailable, retrying (attempt ${retryCount + 1}/${maxRetries + 1})...` 
+              await sendProgress({
+                type: 'info',
+                message: `Service temporarily unavailable, retrying (attempt ${retryCount + 1}/${maxRetries + 1})...`
               });
-              
+
               // Wait before retry with exponential backoff
               await new Promise(resolve => setTimeout(resolve, retryCount * 2000));
-              
-              // If Groq fails, try switching to a fallback model
-              if (isGroqServiceError && retryCount === maxRetries) {
-                console.log('[generate-ai-code-stream] Groq service unavailable, falling back to GPT-4');
-                streamOptions.model = openai('gpt-4-turbo');
-                actualModel = 'gpt-4-turbo';
-              }
             } else {
               // Final error, send to user
-              await sendProgress({ 
-                type: 'error', 
-                message: `Failed to initialize ${providerName} streaming: ${streamError.message}` 
+              await sendProgress({
+                type: 'error',
+                message: `Failed to initialize ${modelData.provider} streaming: ${streamError.message}`
               });
-              
-              // If this is a Google model error, provide helpful info
-              if (providerName === 'Google') {
-                await sendProgress({ 
-                  type: 'info', 
-                  message: 'Tip: Make sure your GEMINI_API_KEY is set correctly and has proper permissions.' 
-                });
-              }
-              
+
               throw streamError;
             }
           }
@@ -1687,49 +1628,23 @@ It's better to have 3 complete files than 10 incomplete files.`
               try {
                 // Create a focused prompt to complete just this file
                 const completionPrompt = `Complete the following file that was truncated. Provide the FULL file content.
-                
+
 File: ${filePath}
 Original request: ${prompt}
-                
+
 Provide the complete file content without any truncation. Include all necessary imports, complete all functions, and close all tags properly.`;
-                
-                // Make a focused API call to complete this specific file
-                // Create a new client for the completion based on the provider
-                let completionClient;
-                if (model.includes('gpt') || model.includes('openai')) {
-                  completionClient = openai;
-                } else if (model.includes('claude')) {
-                  completionClient = anthropic;
-                } else if (model === 'moonshotai/kimi-k2-instruct-0905') {
-                  completionClient = groq;
-                } else {
-                  completionClient = groq;
-                }
-                
-                // Determine the correct model name for the completion
-                let completionModelName: string;
-                if (model === 'moonshotai/kimi-k2-instruct-0905') {
-                  completionModelName = 'moonshotai/kimi-k2-instruct-0905';
-                } else if (model.includes('openai')) {
-                  completionModelName = model.replace('openai/', '');
-                } else if (model.includes('anthropic')) {
-                  completionModelName = model.replace('anthropic/', '');
-                } else if (model.includes('google')) {
-                  completionModelName = model.replace('google/', '');
-                } else {
-                  completionModelName = model;
-                }
-                
+
+                // Use the same model client for completion
                 const completionResult = await streamText({
-                  model: completionClient(completionModelName),
+                  model: modelClient,
                   messages: [
-                    { 
-                      role: 'system', 
+                    {
+                      role: 'system',
                       content: 'You are completing a truncated file. Provide the complete, working file content.'
                     },
                     { role: 'user', content: completionPrompt }
                   ],
-                  temperature: model.startsWith('openai/gpt-5') ? undefined : appConfig.ai.defaultTemperature
+                  temperature: config.temperature || modelData.temperature || appConfig.ai.defaultTemperature
                 });
                 
                 // Get the full text from the stream

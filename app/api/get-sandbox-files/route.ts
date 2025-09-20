@@ -155,11 +155,10 @@ function extractRoutes(files: Record<string, FileInfo>): RouteInfo[] {
       const routeMatches = Array.from(fileInfo.content.matchAll(/path=["']([^"']+)["'].*(?:element|component)={([^}]+)}/g));
       
       for (const match of routeMatches) {
-        const [, routePath] = match;
-        // componentRef available in match but not used currently
+        const [, routePath, componentRef] = match;
         routes.push({
           path: routePath,
-          component: path,
+          component: componentRef || path,
         });
       }
     }

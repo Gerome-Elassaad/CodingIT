@@ -21,6 +21,17 @@ const nextConfig = {
         "util": false
       };
     }
+
+    // Disable webpack filesystem cache to prevent serialization issues with large strings
+    config.cache = false;
+
+    // Configure webpack optimizations for better cache performance
+    config.optimization = {
+      ...config.optimization,
+      moduleIds: 'deterministic',
+      chunkIds: 'deterministic',
+    };
+
     return config;
   }
 }
