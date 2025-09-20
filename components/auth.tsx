@@ -323,6 +323,18 @@ function SignUpForm({
       if (error) throw error
       if (data.user && !data.session) {
         setMessage('Check your email for the confirmation link.')
+        await fetch('/api/mail', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email,
+            type: 'verification',
+            firstname: firstName,
+            validationLink: redirectTo || 'https://codingit.vercel.app',
+          }),
+        })
       }
     } catch (error: any) {
       setError(error.message || 'An unexpected error occurred.')
