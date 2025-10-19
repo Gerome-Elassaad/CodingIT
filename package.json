@@ -7,13 +7,7 @@
     "dev:webpack": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "desktop": "pnpm --filter @codinit/desktop dev",
-    "desktop:dev": "pnpm --filter @codinit/desktop dev",
-    "desktop:build": "pnpm --filter @codinit/desktop build",
-    "desktop:build:mac": "pnpm --filter @codinit/desktop electron:build:mac",
-    "desktop:build:win": "pnpm --filter @codinit/desktop electron:build:win",
-    "desktop:build:linux": "pnpm --filter @codinit/desktop electron:build:linux"
+    "lint": "next lint"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "latest",

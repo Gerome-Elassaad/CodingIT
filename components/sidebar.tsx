@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { HelpModal } from '@/components/help-center';
 import { PricingModal } from '@/components/pricing';
+import { NewsArticles } from '@/components/ui/sidebar-articles';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -17,6 +18,7 @@ import { Separator } from '@/components/ui/separator';
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser';
 import { getProjects, Project, deleteProject } from '@/lib/database';
 import { formatDistanceToNow } from 'date-fns';
+import { News } from './ui/sidebar-news';
 
 interface SidebarProps {
   isOpen?: boolean;
@@ -317,14 +319,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Chat Controls */}
         <div className="p-4 space-y-3">
-          <Button
-            onClick={onStartNewChat}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2 transition-colors"
-          >
-            <MessageCircle className="h-4 w-4" />
-            Start new chat
-          </Button>
-
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -381,17 +375,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         <Separator />
 
+        {/* News Section */}
+        <div className="px-4 pb-4">
+          <NewsArticles />
+        </div>
+
+        <Separator />
+
         {/* Utility / Navigation Links */}
         <div className="p-4 space-y-1">
-          <Button
-            variant="ghost"
-            onClick={onGetFreeTokens}
-            className="w-full justify-start gap-3 text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-950 transition-colors"
-          >
-            <Gift className="h-4 w-4" />
-            Get free tokens
-          </Button>
-
           <Button
             variant="ghost"
             asChild
