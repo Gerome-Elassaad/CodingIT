@@ -7,6 +7,13 @@
   </a>
 </p>
 
+<p align="center">
+  <a href="https://huntscreens.com/en/products/codinit" target="_blank" title="Featured on HuntScreens" aria-label="Featured on HuntScreens">
+  <img src="https://shot.huntscreens.com/badge.svg" alt="Featured on HuntScreens" width="240" height="60" loading="lazy" />
+</a>
+</p>
+
+
 ## USE NEW DESKTOP APP: [HERE](https://github.com/Gerome-Elassaad/codinit-app)
 
 ## Features
