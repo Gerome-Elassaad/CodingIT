@@ -16,22 +16,22 @@ importers:
     dependencies:
       '@ai-sdk/anthropic':
         specifier: latest
-        version: 2.0.44(zod@3.25.76)
+        version: 2.0.45(zod@3.25.76)
       '@ai-sdk/fireworks':
         specifier: latest
         version: 1.0.28(zod@3.25.76)
       '@ai-sdk/google':
         specifier: latest
-        version: 2.0.32(zod@3.25.76)
+        version: 2.0.34(zod@3.25.76)
       '@ai-sdk/google-vertex':
         specifier: latest
-        version: 3.0.63(encoding@0.1.13)(zod@3.25.76)
+        version: 3.0.66(encoding@0.1.13)(zod@3.25.76)
       '@ai-sdk/mistral':
         specifier: latest
         version: 2.0.24(zod@3.25.76)
       '@ai-sdk/openai':
         specifier: latest
-        version: 2.0.67(zod@3.25.76)
+        version: 2.0.68(zod@3.25.76)
       '@ai-sdk/react':
         specifier: ^2.0.56
         version: 2.0.56(react@18.3.1)(zod@3.25.76)
@@ -315,8 +315,8 @@ importers:
 
 packages:
 
-  '@ai-sdk/anthropic@2.0.44':
-    resolution: {integrity: sha512-o8TfNXRzO/KZkBrcx+CL9LQsPhx7PHyqzUGjza3TJaF9WxfH1S5UQLAmEw8F7lQoHNLU0IX03WT8o8R/4JbUxQ==}
+  '@ai-sdk/anthropic@2.0.45':
+    resolution: {integrity: sha512-Ipv62vavDCmrV/oE/lXehL9FzwQuZOnnlhPEftWizx464Wb6lvnBTJx8uhmEYruFSzOWTI95Z33ncZ4tA8E6RQ==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76
@@ -339,14 +339,14 @@ packages:
     peerDependencies:
       zod: ^3.25.76
 
-  '@ai-sdk/google-vertex@3.0.63':
-    resolution: {integrity: sha512-ZkS7TBTNf5Pc4OZj6kFPP9hl6lc8utBhaGvkhEaZ0UsKZOgF+gB78YVwTtLfRPnyrEXW7KHS63SzelEQEebgjw==}
+  '@ai-sdk/google-vertex@3.0.66':
+    resolution: {integrity: sha512-WwCr28v5Cq2yg0RoJTxzLx3tGZmQuIpICME9iUC4P16ug24SW50ZJ+uGe7decu1n9zGW4BMkqWvnheGTzj3Sjw==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76
 
-  '@ai-sdk/google@2.0.32':
-    resolution: {integrity: sha512-tQh15Eo+qcW2Yx1fqIT/iBf9sUAsEzx8oriyxMQAGLYMlZBG6EGs1ftNWQIwWqmAjz8q9FH0WjKs18E5522JjA==}
+  '@ai-sdk/google@2.0.34':
+    resolution: {integrity: sha512-zIDWktv8bj/907EZjbzaelbTqIaOqtLVq3v2wQp9A7WuqaRVRJ8vAiwQy/dGBdN0Sj5/X01HVhj5eU6xHgHgAg==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76
@@ -363,8 +363,8 @@ packages:
     peerDependencies:
       zod: ^3.25.76
 
-  '@ai-sdk/openai@2.0.67':
-    resolution: {integrity: sha512-JhB3fUpY+IxAocyJt2PHuhfNwH+e+rDbZ8Q+d0hgSyNycuPRrV0xutLaf7mgDTvjr5FCrVEkXmM73tJprzZMiA==}
+  '@ai-sdk/openai@2.0.68':
+    resolution: {integrity: sha512-qUSLFkqgUoFArzBwttu0KWVAZYjbsdZGOklSJXpfZ2nDC61yseHxtcnuG8u6tqKnGXDh4eakEgREDWU2sRht7A==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76
@@ -3262,8 +3262,8 @@ packages:
   csstype@3.1.3:
     resolution: {integrity: sha512-M1uQkMl8rQK/szD0LNhtqxIPLpimGm8sOBwU7lLnCpSbTyY3yeU1Vc7l4KT5zT4s/yOxHH5O7tIuuLOCnLADRw==}
 
-  csstype@3.2.1:
-    resolution: {integrity: sha512-98XGutrXoh75MlgLihlNxAGbUuFQc7l1cqcnEZlLNKc0UrVdPndgmaDmYTDDh929VS/eqTZV0rozmhu2qqT1/g==}
+  csstype@3.2.3:
+    resolution: {integrity: sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==}
 
   d3-array@3.2.4:
     resolution: {integrity: sha512-tdQAmyA18i4J7wprpYq8ClcxZy3SC31QMeByyCFyRt7BVHdREQZ5lpzoe5mFEYZUWe+oq8HBvk9JjpibyEV4Jg==}
@@ -5880,7 +5880,7 @@ packages:
 
 snapshots:
 
-  '@ai-sdk/anthropic@2.0.44(zod@3.25.76)':
+  '@ai-sdk/anthropic@2.0.45(zod@3.25.76)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
       '@ai-sdk/provider-utils': 3.0.17(zod@3.25.76)
@@ -5906,10 +5906,10 @@ snapshots:
       '@vercel/oidc': 3.0.3
       zod: 3.25.76
 
-  '@ai-sdk/google-vertex@3.0.63(encoding@0.1.13)(zod@3.25.76)':
+  '@ai-sdk/google-vertex@3.0.66(encoding@0.1.13)(zod@3.25.76)':
     dependencies:
-      '@ai-sdk/anthropic': 2.0.44(zod@3.25.76)
-      '@ai-sdk/google': 2.0.32(zod@3.25.76)
+      '@ai-sdk/anthropic': 2.0.45(zod@3.25.76)
+      '@ai-sdk/google': 2.0.34(zod@3.25.76)
       '@ai-sdk/provider': 2.0.0
       '@ai-sdk/provider-utils': 3.0.17(zod@3.25.76)
       google-auth-library: 9.15.1(encoding@0.1.13)
@@ -5918,7 +5918,7 @@ snapshots:
       - encoding
       - supports-color
 
-  '@ai-sdk/google@2.0.32(zod@3.25.76)':
+  '@ai-sdk/google@2.0.34(zod@3.25.76)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
       '@ai-sdk/provider-utils': 3.0.17(zod@3.25.76)
@@ -5936,7 +5936,7 @@ snapshots:
       '@ai-sdk/provider-utils': 3.0.17(zod@3.25.76)
       zod: 3.25.76
 
-  '@ai-sdk/openai@2.0.67(zod@3.25.76)':
+  '@ai-sdk/openai@2.0.68(zod@3.25.76)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
       '@ai-sdk/provider-utils': 3.0.17(zod@3.25.76)
@@ -8688,7 +8688,7 @@ snapshots:
       '@vue/reactivity': 3.5.21
       '@vue/runtime-core': 3.5.21
       '@vue/shared': 3.5.21
-      csstype: 3.2.1
+      csstype: 3.2.3
     optional: true
 
   '@vue/server-renderer@3.5.21(vue@3.5.21(typescript@5.9.2))':
@@ -9276,7 +9276,7 @@ snapshots:
 
   csstype@3.1.3: {}
 
-  csstype@3.2.1:
+  csstype@3.2.3:
     optional: true
 
   d3-array@3.2.4:
