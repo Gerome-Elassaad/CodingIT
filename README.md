@@ -14,7 +14,7 @@
 </p>
 
 
-## USE NEW DESKTOP APP: [HERE](https://github.com/Gerome-Elassaad/codinit-app)
+## USE NEW DESKTOP APP: [HERE](https://github.com/codinit-dev/codinit-dev)
 
 ## Features
 
